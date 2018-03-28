@@ -1,0 +1,50 @@
+
+html, body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.inputFile {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+.inputFile + label {
+    font-size: 1.25em;
+    color: #FFF;
+    background-color: #ce5340;
+    display: inline-block;
+    cursor: pointer;
+    padding: 0.8em 1.7em;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.inputFile:focus + label,
+.inputFile + label:hover {
+    background-color: #b24737;
+}
+
+.inputFile + label .inner {
+    display: flex;
+}
+
+.wrapper {
+    /* display: inline-block; */
+    /* padding: 25px; */
+    /* background-color: rgba(206, 83, 64, 0.48); */
+    margin: 20px 0 20px 5px;
+}
+
+table tr {
+    padding-bottom: 5px;
+}
+
+table tr td {
+    padding: 5px 10px;
+    border: 1px solid lightslategrey;
+}
+

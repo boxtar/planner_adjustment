@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+    <title>Planner Adjustments</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+</head>
+<body>
+
+    <div class="wrapper">
+        <input type="file" id="dataInput" name="dataInput" class="inputFile"/>
+        <label for="dataInput"><div class="inner"><i class="material-icons">input</i>&nbsp;&nbsp; Choose a .csv file...</div></label>
+    </div>
+    
+    <div id="app">
+    
+        <div id="status"></div>
+        
+        <div id="report"></div>
+    
+        <table id="output"></table>
+        
+    </div>
+    
+    <!-- Scripts -->
+    <script type="text/javascript" src="./js/papaparse.min.js"></script>
+    <script type="text/javascript" src="./js/planner_adjustments_script.js"></script>
+
+</body>
+</html>
