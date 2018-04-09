@@ -188,6 +188,7 @@ try {
 function handleFileSelect(e) {
     
     // Reset HTML hooks
+    document.getElementById('report').innerHTML = '';
     document.getElementById('output').innerHTML = '';
     document.getElementById('status').innerHTML = '';
     
@@ -251,33 +252,39 @@ function startProcessing(input) {
         console.log(dataCollections);
         
         
+        let reportOutput = [];
         
-        // Locals for below loops
-        let collectionType;
-        let resbudType;
-        let currentBudget;
-        let newBudget;
-        let budgetDifference;
-        
-        dataCollections.forEach(collection => {
+        dataCollections.forEach( collection => {
             
-            collectionType = collection.name;
+            reportOutput.push('<h3>', collection.name, ' Summary</h3>');
             
-            collection.data.forEach(resbud => {
-                resbudType = resbud.name;
-                currentBudget = resbud.oldBudget.total;
-                newBudget = resbud.newBudget.total;
-                budgetDifference = resbud.budgetDifference
+            reportOutput.push('<table>');
+            
+            collection.data.forEach( resbud => {
                 
-                document.getElementById('report').innerHTML += collectionType + ' | ' + resbud.name + ' | ' + resbud.oldBudget.total + ' | ' +  '<input type="number" id="' + resbud.name + '" value="'+ resbud.newBudget.total +'">' + ' | ' + resbud.budgetDifference + '<br/>';
+                reportOutput.push('<tr>');
+                reportOutput.push('<td>', collection.name, '</td>');
+                reportOutput.push('<td>', resbud.name, '</td>');
+                reportOutput.push('<td ' + redIfNegative(resbud.oldBudget.total) + '>', resbud.oldBudget.total, '</td>');
+                reportOutput.push('<td>', '<input type="number" id="', resbud.name, '" value="', resbud.newBudget.total, '" ' + redIfNegative(resbud.newBudget.total) + '>', '</td>');
+                reportOutput.push('</tr>');
+                
+                
+                document.getElementById('report').innerHTML += collection.name + ' | ' + resbud.name + ' | ' + resbud.oldBudget.total + ' | ' +  '<input type="number" id="' + resbud.name + '" value="'+ resbud.newBudget.total +'">' + ' | ' + resbud.budgetDifference + '<br/>';
             });
+            
+            reportOutput.push('</table>');
         });
         
+        console.log(reportOutput);
+        document.getElementById('report').innerHTML = reportOutput.join('');
         
         
-        // Error check:
-        if ( fecData.data.length === 0 && priceData.data.length === 0 )
-            throw "No budgets detected in input file";
+        let sourceData = false;
+        if ( fecData.data.length > 0) sourceData = FEC;
+        else if ( priceData.data.length > 0 ) sourceData = PRICE;
+        else throw "Need to get Subproject and stuff from user";
+            
         
         // Save Sub-Project and Description
         subProject = data[FEC][0][SUB_PROJECT];
@@ -288,6 +295,7 @@ function startProcessing(input) {
             periods.add(record[PERIOD]);
         });
         
+        
         // Figures out the amendments to be posted each period
         fecData.processAmendmentAmounts();
         priceData.processAmendmentAmounts();
@@ -296,13 +304,15 @@ function startProcessing(input) {
         output += collectionToString(priceData, subProject, description, periods);
         
         // Render to HTML
-        document.getElementById('output').innerHTML = output
+        document.getElementById('output').innerHTML = '<h1>Result</h1>';
+        document.getElementById('output').innerHTML += output
     }
     catch (err) {
         document.getElementById('app').innerHTML = "<div style=\"color: red\"><h2>ERROR: </h2><h4>" + err + "</h4></div>";
         console.error(err);
     }
 }
+
 
 // Invokes resbudToString for each Resbud in given Collection
 function collectionToString(collection, subProject, description, periods) {
@@ -335,4 +345,11 @@ function resbudToString(resbud, type, subProject, description, periods) {
     }
    
     return output.join('');
+}
+
+// Returns inline style string to color text red if given integer is less than 0
+function redIfNegative(number) {
+    if ( parseInt(number) < 0 )
+        return 'style="color: red"';
+    return '';
 }
