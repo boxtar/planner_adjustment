@@ -8,9 +8,12 @@
 </head>
 <body>
 
-    <div class="wrapper">
+    <div class="wrapper" id="initialControls">
         <input type="file" id="dataInput" name="dataInput" class="inputFile"/>
         <label for="dataInput"><div class="inner"><i class="material-icons">input</i>&nbsp;&nbsp; Choose a .csv file...</div></label>
+        
+        
+        <p id="noFile" style="text-decoration: underline; cursor: pointer">or continue without a file...</p>
     </div>
     
     <div id="app">
@@ -25,7 +28,11 @@
     
     <!-- Scripts -->
     <script type="text/javascript" src="./js/papaparse.min.js"></script>
-    <script type="text/javascript" src="./js/planner_adjustments_script.js"></script>
+    <script type="text/javascript" src="./js/store.js"></script>
+    <script type="text/javascript" src="./js/data_collection_class.js"></script>
+    <script type="text/javascript" src="./js/resbud_class.js"></script>
+    <script type="text/javascript" src="./js/app_class.js"></script>
+    <script type="text/javascript" src="./js/main.js"></script>
 
 </body>
 </html>
