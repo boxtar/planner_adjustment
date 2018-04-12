@@ -1,19 +1,24 @@
 /**
- |------------------------------------
- | DataCollection class 
+ |-----------------------------------------------------
+ | DataCollection class
+ | NOTE: This class uses Constants defined in main.js
  |
  | Imports:
- | import Resbud from resbud_class.js
- |------------------------------------
+ | import Resbud from Resbud.js
+ |
+ | Fields:
+ | String name: Version (PBFEC, PBPRICE etc.)
+ | Array split: Array holding percentage split per period
+ | Array data: Array or Resbud objects.
+ |-----------------------------------------------------
  */
- 
 
 class DataCollection {
     
     constructor (name) {
         this.name = name;
         this.data = [];
-        this.split = [];
+        this.split = []; // SHould be moved up to App Class
     }
     
     /**
@@ -37,17 +42,19 @@ class DataCollection {
                 // If there is more than 1 entry then we have a bug to fix
                 throw "More than 1 Resbud object for " + record[RESBUD] + " in Collection " + this.name + ".<br/>Duplicates should not be possible - See JPM."
             } else {
-                // No entries means new Resbud encountered. Instantiate and push to Collection
+                // No entries means new Resbud encountered. Instantiate and push to data
                 resbud = new Resbud(record[RESBUD]);
                 this.data.push(resbud);
             }
-            
-            resbud.pushOldBudget(record[CURR_AMOUNT]);
             
             // If there is a new budget amount on this record and new budget hasn't already been
             // set for this resbud then set it.
             if ( record[NEW_BUDGET] !== 0 && resbud.newBudget.total === 0 )
                 resbud.setNewBudget(record[NEW_BUDGET]);
+
+            // Push old budget amount onto Resbud
+            resbud.pushOldBudget(record[CURR_AMOUNT]);
+                
 
         }); 
     }
@@ -76,6 +83,7 @@ class DataCollection {
         });
     }
     
+    // Should be moved up to App class
     setSplit () {
         // Get percentage split from the first Resbud with an old budget:
         for (let i = 0; i < this.data.length; i++) {
