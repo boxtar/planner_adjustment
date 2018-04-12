@@ -11,8 +11,15 @@
 // Entry point
 (function(){
 
-    // Immutable store of shared read-only data
-    const store = Object.freeze({
+    /**
+     * Shared store object.
+     *
+     * Will be controlled by App class which will pass 
+     * only what is required from the store to other
+     * objects. This will allow the App class to
+     * control the updating of the store.
+     */
+    const store = {
         constants: Object.freeze({
             TYPE:'Version',
             FEC:'PBFEC',
@@ -25,6 +32,7 @@
             PERIOD:'Period',
         }),
         htmlHooks: Object.freeze({
+            APP: 'app',
             FILE_INPUT: 'dataInput',
             NO_FILE: 'noFile',
             INITIAL_CONTROLS: 'initialControls',
@@ -33,7 +41,7 @@
             STATUS: 'status',
             OUTPUT: 'output',
         }),
-    });
+    };
 
     try {
 
@@ -44,7 +52,7 @@
             document.getElementById(store.htmlHooks.FILE_INPUT).addEventListener('change', getFileSelectedHander(store), false);
 
             // Or if user doesn't have a file, display empty report table so user can add manually
-            document.getElementById(store.htmlHooks.NO_FILE).addEventListener('click', startProcessing, false);
+            // document.getElementById(store.htmlHooks.NO_FILE).addEventListener('click', startProcessing, false);
 
         } else {
 
@@ -58,23 +66,6 @@
 
 }());
 
-// function handleReportClick(e) {
-//     if (e.target.dataset.type == FEC.toLowerCase()) {
-//         console.log('New PBFEC Row');
-//     } else if (e.target.dataset.type == PRICE.toLowerCase()) {
-//         console.log('New PBPRICE Row');
-//     }
-// }
-
-// function handleReportKeyDown(e) {
-//     let keyCode = e.keyCode || e.which;
-//     if (keyCode === 13) {
-//         console.log('Enter key pressed');
-//         return false;
-//     }
-//     return true;
-// }
-
 
 /**
  |--------------------------------------------------
@@ -85,48 +76,23 @@
 
  function getFileSelectedHander(store) {
      return e => {
-         // Reset HTML hooks
-         document.getElementById(store.htmlHooks.REPORT).innerHTML = '';
-         document.getElementById(store.htmlHooks.OUTPUT).innerHTML = '';
-         document.getElementById(store.htmlHooks.STATUS).innerHTML = '';
-
+         
          let files = e.target.files; // FileList object
 
          if (files.length > 0) {
              // Use Papa to parse CSV file:
              let data = Papa.parse(files[0], {
-                 complete: (results, file) => startProcessing(results.data),
+                 complete: (results, file) => startProcessing(results.data, store),
                  skipEmptyLines: true,
                  header: true,
                  dynamicTyping: true
              });
          } else {
-             document.getElementById('status').innerHTML += '<p>No file chosen</p>';
+             document.getElementById(store.constants.STATUS).innerHTML += '<p>No file chosen</p>';
          }
      };
  };
 
-// function handleFileSelect(e) {
-//     // Reset HTML hooks
-//     document.getElementById('report').innerHTML = '';
-//     document.getElementById('output').innerHTML = '';
-//     document.getElementById('status').innerHTML = '';
-
-//     let files = e.target.files; // FileList object
-
-//     if (files.length > 0) {
-//         // Use Papa to parse CSV file:
-//         let data = Papa.parse(files[0], {
-//             complete: (results, file) => startProcessing(results.data),
-//             skipEmptyLines: true,
-//             header: true,
-//             dynamicTyping: true
-//         });
-//     } else {
-//         document.getElementById('status').innerHTML += '<p>No file chosen</p>';
-//     }
-
-// }
 
 /**
  |--------------------------------------------
@@ -140,17 +106,33 @@
  | value within the record.
  |--------------------------------------------
  */
-function startProcessing(input) {
+function startProcessing(input, store) {
 
-    document.getElementById(INITIAL_CONTROLS).style.display = "none";
+    document.getElementById(store.htmlHooks.INITIAL_CONTROLS).style.display = "none";
     
-    // filter out summary/blank rows
-    let data = input.filter(row => row[PERIOD] != false);
+    if (input.length > 0) {
+        
+        try {
+            // filter out summary/blank rows
+            let data = input.filter(row => row[store.constants.PERIOD] != false);
 
-    // Instantiate new App instance
-    let app = new App();
-    app.init(data);
-    console.log(app);
+            // Instantiate new App instance
+            let app = new App(store);
+            
+            // Initialise App with the parsed data
+            app.init(data);
+            
+            console.log(app, store);
+            
+            app.generateSummaryReport();
+            
+        } catch (err) {
+            
+            document.getElementById(store.htmlHooks.APP).innerHTML = "<div style=\"color: red\"><h2>ERROR: </h2><h4>" + err + "</h4></div>";
+            
+            console.error(err);
+        }
+    }
 
     // app.setCollections(new DataCollection(FEC), new DataCollection(PRICE));
     
@@ -224,6 +206,23 @@ function startProcessing(input) {
 
 
 }
+
+// function handleReportClick(e) {
+//     if (e.target.dataset.type == FEC.toLowerCase()) {
+//         console.log('New PBFEC Row');
+//     } else if (e.target.dataset.type == PRICE.toLowerCase()) {
+//         console.log('New PBPRICE Row');
+//     }
+// }
+
+// function handleReportKeyDown(e) {
+//     let keyCode = e.keyCode || e.which;
+//     if (keyCode === 13) {
+//         console.log('Enter key pressed');
+//         return false;
+//     }
+//     return true;
+// }
 
 
 // Invokes resbudToString for each Resbud in given Collection

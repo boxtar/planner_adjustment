@@ -13,47 +13,57 @@
 
 class App {
 
-    constructor() {
-        // Fields within each record in input (to avoid hard-coding)
-        this.typeField = 'Version';
-        this.resbudField = 'Resbud';
-        this.fecField = 'PBFEC';
-        this.priceField = 'PBPRICE';
-        this.subProjectField = 'Sub-Project';
-        this.descriptionField = 'Description';
-        this.periodField = 'Period';
-
-        // Other vars to avoid hard-coding
-        this.reportHtmlHook = 'report';
-        this.resultsHtmlHook = 'result';
-        
+    constructor(store) {
+        // Shared store. Only give what is required to other components (Flux-like architecture)
+        this.store = store
         // Sub-project number
-        this.subProject = '';
+        this.store.subProject = 'test';
         // Description for each row - always the same
-        this.description = '';
+        this.store.description = '';
         // List of periods
-        this.periods = new Set();
-        // Percentage split of a Resbud's budget over the duration of project
-        this.percentagesPerPeriod = [];
-        // List of DataCollection's. Each collection holds a list of Resbud's
-        this.collections = [];
+        this.store.periods = new Set();
+        // Percentage split of a Resbuds budget over the duration of project
+        this.store.percentagesPerPeriod = [];
+        // List of DataCollection's. Each collection holds a list of Resbuds
+        this.store.collections = [];
     }
 
+    /**
+     * Initialise application data and hooks
+     */
     init(input) {
         this.initialiseCollections(input);
-        this.setSubProject(input[0][this.subProjectField]);
-        this.setDescription(input[0][this.descriptionField]);
+        this.setSubProject(input[0][this.store.constants.SUB_PROJECT]);
+        this.setDescription(input[0][this.store.constants.DESCRIPTION]);
         this.setPeriods(input);
     }
 
     /**
-     * Initialise data
+     * Initialise collections of Resbud data
      *
      * @param Array input - List of objects 
      * @return Void 
      */
     initialiseCollections (input) {
+        
         console.log(input);
+        
+        // Locals
+        let collection;
+        let collections = new Set();
+        
+        // Get list of DataCollections to be created by parsing input for unique values in the TYPE column
+        input.forEach( record => collections.add(record[this.store.constants.TYPE]) );
+        
+        collections.forEach( name => {
+            
+            collection = new DataCollection(name, this.store.constants);
+            
+            collection.init( input.filter( record => record[this.store.constants.TYPE] === collection.name ) );
+            
+            this.store.collections.push(collection);
+            
+        });
     }
 
     /**
@@ -73,7 +83,7 @@ class App {
      * @return String this.subProject 
      */
     setSubProject(sp) {
-        this.subProject = sp
+        this.store.subProject = sp
     }
 
     /**
@@ -83,7 +93,7 @@ class App {
      * @return String this.description 
      */
     setDescription(desc) {
-        this.description = desc
+        this.store.description = desc
     }
 
     /**
@@ -93,7 +103,13 @@ class App {
      * @return Array this.periods 
      */
     setPeriods(input) {
-        input.forEach(r => this.periods.add(r[this.periodField]));
+        input.forEach(record => this.store.periods.add(record[this.store.constants.PERIOD]));
+    }
+    
+    
+    generateSummaryReport () {
+        this.store.collections.forEach( collection => document.getElementById(this.store.htmlHooks.REPORT).appendChild(collection.generateSummaryReport()));
+        
     }
 
     renderInputReport() {

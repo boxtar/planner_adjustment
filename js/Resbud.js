@@ -6,8 +6,7 @@
 
 class Resbud {
     
-    constructor (type, name) {
-        this.type = type;
+    constructor (name) {
         this.name = name;
         this.budgetDifference = 0;
         this.oldBudget = {
@@ -42,5 +41,32 @@ class Resbud {
             return this.oldBudget.data.map( n => n / this.oldBudget.total );
     }
 
-    // getMarkup
+    generateSummaryReport (type) {
+        
+        // Resbud report container (table row)
+        let rowElement = document.createElement('tr');
+        
+        // Add type field
+        rowElement.appendChild(this.generateField(type));
+        
+        // Add resbud code field
+        rowElement.appendChild(this.generateField(this.name));
+        
+        // Add current/old budget
+        rowElement.appendChild(this.generateField(this.oldBudget.total));
+        
+        // Add new budget
+        rowElement.appendChild(this.generateField(this.newBudget.total));
+        
+        // Add change/amendment required 
+        rowElement.appendChild(this.generateField( this.newBudget.total - this.oldBudget.total ));
+
+        return rowElement;
+    }
+    
+    generateField(value) {
+        let el = document.createElement('td');
+        el.appendChild(document.createTextNode(value));
+        return el;
+    }
 };

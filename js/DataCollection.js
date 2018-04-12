@@ -15,7 +15,8 @@
 
 class DataCollection {
     
-    constructor (name) {
+    constructor (name, constants) {
+        this.constants = constants;
         this.name = name;
         this.data = [];
         this.split = []; // SHould be moved up to App Class
@@ -24,15 +25,15 @@ class DataCollection {
     /**
      * Extract relevant data from source array
      */
-    initialise (source) {
+    init (source) {
         // Local var used in loop
         let resbud;
         
         // Loop over every record within given source
         source.forEach( record => {
-            
+
             // Empty array or array with exactly 1 Resbud object in it:
-            resbud = this.data.filter(resbud => resbud.name === record[RESBUD]);
+            resbud = this.data.filter(resbud => resbud.name === record[this.constants.RESBUD]);
             
             if ( resbud.length === 1 ) {
                 // If there is 1 entry then extract it
@@ -40,20 +41,20 @@ class DataCollection {
             }
             else if ( resbud.length > 1 ) {
                 // If there is more than 1 entry then we have a bug to fix
-                throw "More than 1 Resbud object for " + record[RESBUD] + " in Collection " + this.name + ".<br/>Duplicates should not be possible - See JPM."
+                throw "More than 1 Resbud object for " + record[this.constants.RESBUD] + " in Collection " + this.name + ".<br/>Duplicates should not be possible - See JPM."
             } else {
                 // No entries means new Resbud encountered. Instantiate and push to data
-                resbud = new Resbud(record[RESBUD]);
+                resbud = new Resbud(record[this.constants.RESBUD]);
                 this.data.push(resbud);
             }
             
             // If there is a new budget amount on this record and new budget hasn't already been
             // set for this resbud then set it.
-            if ( record[NEW_BUDGET] !== 0 && resbud.newBudget.total === 0 )
-                resbud.setNewBudget(record[NEW_BUDGET]);
+            if ( record[this.constants.NEW_BUDGET] !== 0 && resbud.newBudget.total === 0 )
+                resbud.setNewBudget(record[this.constants.NEW_BUDGET]);
 
             // Push old budget amount onto Resbud
-            resbud.pushOldBudget(record[CURR_AMOUNT]);
+            resbud.pushOldBudget(record[this.constants.CURR_AMOUNT]);
                 
 
         }); 
@@ -98,5 +99,50 @@ class DataCollection {
                 this.split.push( (100/n) / 100 );
             }
         }
+    }
+    
+    generateSummaryReport () {
+        
+        // Generate container for this Collections report
+        let container = document.createElement('div');
+        container.id = this.name.toLowerCase() + '-report-container';
+        
+        // Generate and append heading for report 
+        let heading = document.createElement('h3');
+        heading.appendChild(document.createTextNode(this.name + ' Summary:'));
+        container.appendChild(heading);
+        
+        // Generate report table
+        let report = document.createElement('table');
+        report.id = this.name.toLowerCase() + '-report';
+        
+        // Add heading row
+        report.appendChild(this.generateReportHeader());
+        
+        // Generate data for each Resbud 
+        this.data.forEach( resbud => report.appendChild(resbud.generateSummaryReport(this.name)) );
+        
+        container.appendChild(report);
+        
+        return container;
+        
+    }
+    
+    generateReportHeader () {
+        let headingRow = document.createElement('tr');
+        
+        headingRow.appendChild(this.generateHeadingField(this.constants.TYPE));
+        headingRow.appendChild(this.generateHeadingField(this.constants.RESBUD));
+        headingRow.appendChild(this.generateHeadingField('Current Budget'));
+        headingRow.appendChild(this.generateHeadingField('New Budget'));
+        headingRow.appendChild(this.generateHeadingField('Difference'));
+        
+        return headingRow;
+    }
+    
+    generateHeadingField(value) {
+        let el = document.createElement('th');
+        el.appendChild(document.createTextNode(value));
+        return el;
     }
 };
