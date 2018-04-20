@@ -26,6 +26,8 @@ class DataCollection {
         // this.utils = this.store.utils;
         this.reportTableElement; // Save DOM Element for displaying Resbuds
         this.newBudgetListElement; // Save <select> DOM Element to update the list easier
+        this.newBudgetTotalElement; // Save this so that content can be updated on user inputting new budget
+        this.amendmentTotalElement; // Save this so that content can be updated on user inputting new budget
     }
 
     /**
@@ -101,9 +103,23 @@ class DataCollection {
 
         // Add heading row to table
         report.appendChild(this.buildSummaryReportHeader());
+        
+        // Build the Total row now so that elements can be passed into resbuds for binding to events
+        let totalRow = this.buildSummaryTotalRow();
 
         // Generate data for each Resbud 
-        this.getResbuds().forEach(resbud => report.appendChild(resbud.buildSummaryReport(this.name)));
+        // Passing in DOM Elements and functions with this context bound to this instance so that
+        // Total row at bottom of table can be updated when new budget inputs are changed.
+        // TODO: Look into using Events to deal with this.
+        this.getResbuds().forEach(resbud => report.appendChild(resbud.buildSummaryReport(this.name, {
+            newBudgetTotalElement: this.newBudgetTotalElement,
+            updateNewBudgetTotal: this.calculateNewBudgetTotal.bind(this),
+            amendmentTotalElement: this.amendmentTotalElement,
+            updateAmendmentTotal: this.calculateAdjustmentTotal.bind(this),
+        })));
+        
+        // Add the totals row to the end of the table
+        report.appendChild(totalRow);
 
         // Add the built report table to container
         container.appendChild(report);
@@ -113,7 +129,7 @@ class DataCollection {
 
         return container;
     }
-
+    
     buildResultsReport() {
         // Create the table Element
         let table = this.store.utils.createElement('table', {
@@ -196,7 +212,7 @@ class DataCollection {
     }
 
     /**
-     * Build the table header row
+     * Build Table Footer (Totals) row for Summary Report
      */
     buildSummaryReportHeader() {
         let headingRow = document.createElement('thead');
@@ -205,10 +221,67 @@ class DataCollection {
         headingRow.appendChild(this.buildHeadingCell('Resbud (T)'));
         headingRow.appendChild(this.buildHeadingCell('Current Budget'));
         headingRow.appendChild(this.buildHeadingCell('New Budget'));
-        headingRow.appendChild(this.buildHeadingCell('Difference'));
+        headingRow.appendChild(this.buildHeadingCell('Amendment'));
         return headingRow;
     }
+    
+    /**
+     * Build Table Header row for Summary Report
+     */
+    buildSummaryTotalRow() {
+        let row = this.store.utils.createElement('tfoot');
+        
+        row.appendChild(this.store.utils.createElement('th'));
+        row.appendChild(this.store.utils.createElement('th'));
+        row.appendChild(this.store.utils.createElement('th', {innerHTML: 'TOTALS'}));
+        
+        // Current/Old Budget
+        row.appendChild(this.store.utils.createElement('th', {
+            innerHTML: this.calculateCurrentBudgetTotal()
+        }));
+        
+        // New Budget
+        this.newBudgetTotalElement = this.store.utils.createElement('th', {
+            innerHTML: this.calculateNewBudgetTotal()
+        });
+        row.appendChild(this.newBudgetTotalElement);
+        
+        // Difference
+        this.amendmentTotalElement = this.store.utils.createElement('th', {
+            innerHTML: this.calculateAdjustmentTotal()
+        });
+        row.appendChild(this.amendmentTotalElement);
 
+        return row;
+    }
+    
+    calculateCurrentBudgetTotal() {
+        if (this.getType() === this.store.constants.PRICE) {
+            return this.getResbuds().map( r => r.getOldBudget() ).reduce( (acc, curr) => acc + curr, 0 )
+        } else {
+            return this.getResbuds().map( r => r.getCode() !== 'XZ90' ? r.getOldBudget() : 0 ).reduce( (acc, curr) => acc + curr, 0 )
+        }
+    }
+    
+    calculateNewBudgetTotal() {
+        if (this.getType() === this.store.constants.PRICE) {
+            return this.getResbuds().map( r => r.getNewBudget() ).reduce( (acc, curr) => acc + curr, 0 );
+        } else {
+            return this.getResbuds().map( r => r.getCode() !== 'XZ90' ? r.getNewBudget() : 0 ).reduce( (acc, curr) => acc + curr, 0 );
+        }
+    }
+    
+    calculateAdjustmentTotal() {
+        if (this.getType() === this.store.constants.PRICE) {
+            return this.getResbuds().map( r => r.getNewBudget() - r.getOldBudget() ).reduce( (acc, curr) => acc + curr, 0 )
+        } else {
+            return this.getResbuds().map( r => r.getCode() !== 'XZ90' ? r.getNewBudget() - r.getOldBudget() : 0 ).reduce( (acc, curr) => acc + curr, 0 )
+        }
+    }
+
+    /**
+     * Build Table Header row for Results Report
+     */
     buildResultsReportHeader() {
         let headingRow = document.createElement('thead');
         headingRow.appendChild(this.buildHeadingCell(this.store.constants.TYPE));

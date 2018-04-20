@@ -89,7 +89,7 @@ class Resbud {
         }
     }
 
-    buildSummaryReport(type) {
+    buildSummaryReport(type, updateableContent) {
         // Resbud report container (table row)
         let rowElement = document.createElement('tr');
 
@@ -106,7 +106,7 @@ class Resbud {
         rowElement.appendChild(this.generateField(this.getOldBudget()));
 
         // New Budget Field
-        rowElement.appendChild(this.generateNewBudgetField(type));
+        rowElement.appendChild(this.generateNewBudgetField(type, updateableContent));
 
         // Add change/amendment required
         this.amendmentElement = this.generateField(this.getBudgetChange())
@@ -135,31 +135,41 @@ class Resbud {
         return rows;
     }
 
-    generateNewBudgetField(type) {
+    generateNewBudgetField(type, updateableContent) {
         // Unique ID for this Resbud
         let id = `${type}-${this.name.toLowerCase()}`;
+        
         // Create New Budget Cell
         let newBudgetCell = this.generateField('');
         newBudgetCell.className = 'newBudgetInput';
-        // Create New Budget Input Field to attach to cell
-        let newBudgetInput = document.createElement('input');
-
-        // Set options/attributes of input
-        newBudgetInput.value = this.getNewBudget();
-        newBudgetInput.type = 'text';
-        newBudgetInput.id = `${id}-new-budget`;
+        
+        // // Create New Budget Input Field to attach to cell        
+        let newBudgetInput = this.store.utils.createElement('input', {
+            value: this.getNewBudget(),
+            type: 'number',
+            id: `${id}-new-budget`
+        });
 
         // data-binding
-        newBudgetInput.onkeyup = e => {
+        newBudgetInput.onkeyup = () => {
             // Reset new budget data so that results can be re-calculated
-            if (this.newBudget.data.length > 0) this.newBudget.data = [];;
+            if (this.newBudget.data.length > 0)
+                this.newBudget.data = [];
+            
             newBudgetInput.value = newBudgetInput.value.trim();
             if (newBudgetInput.value !== '-' && isNaN(newBudgetInput.value))
                 newBudgetInput.value = this.getNewBudget();
             else
-                this.setNewBudgetTotal(newBudgetInput.value);
+                this.setNewBudgetTotal(parseInt(newBudgetInput.value));
 
+            // Update Amendment/Difference Element
             this.amendmentElement.innerHTML = this.getBudgetChange();
+
+            // Update New Budget Total Element
+            updateableContent.newBudgetTotalElement.innerHTML = updateableContent.updateNewBudgetTotal();
+            
+            // Update Amendment/Difference Total Element 
+            updateableContent.amendmentTotalElement.innerHTML = updateableContent.updateAmendmentTotal();
         };
 
         // Attach input to cell
