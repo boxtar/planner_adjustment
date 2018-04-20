@@ -119,38 +119,87 @@ class App {
         this.getCollections().forEach(
             collection => collection.calculateResults()
         );
-        this.buildResultsReport();
+        this.buildResultsReport().scrollIntoView();
     }
 
     /**
      * Creates and injects Summary Report Element to DOM
      */
     buildSummaryReport() {
+        
+        // Get Parent element
         let reportContainer = document.getElementById(this.store.htmlHooks.REPORT);
-
+        
+        // Re-used box element (gets re-assigned multiple times)
+        let box = this.store.utils.createElement('div', {
+            className: 'box'
+        });
+        
+        // Add box to container
+        reportContainer.appendChild(box);
+        
         // Add field to display sub-project
-        reportContainer.appendChild(this.buildSubProjectField());
+        box.appendChild(this.buildSubProjectField());
 
         // Add field to display duration
-        reportContainer.appendChild(this.buildDurationField());
+        box.appendChild(this.buildDurationField());
 
         // Add field to display first period
-        reportContainer.appendChild(this.buildFirstPeriodField());
+        box.appendChild(this.buildFirstPeriodField());
+        
+        // Add page refresh button
+        box.appendChild(this.buildReloadButton());
 
         // Add table with data for each DataCollection
+        // this.store.collections.forEach(collection => {
+            // reportContainer.appendChild(collection.buildSummaryReport());
+        // });
+        // this.store.collections.forEach(collection => collectionReports.push(collection.buildSummaryReport()));
         this.store.collections.forEach(collection => {
-            reportContainer.appendChild(collection.buildSummaryReport());
+            
+            box = this.store.utils.createElement('div', { className: 'box' });
+            box.appendChild(collection.buildSummaryReport());
+            reportContainer.appendChild(box);
         });
 
         // Add button with event for calculating results
         let getResultsButton = this.store.utils.createElement('button', {
-            innerHTML: 'Get Results',
-            id: 'get-results-button'
+            innerHTML: 'Fetch Results',
+            id: 'get-results-button',
+            className: 'button is-info',
         });
         getResultsButton.onclick = () => this.calculateResults();
+        
+        box = this.store.utils.createElement('div', { className: 'box' });
+        box.appendChild(getResultsButton);
 
         // Add the button to container element
-        reportContainer.appendChild(getResultsButton);
+        reportContainer.appendChild(box);
+    }
+    
+    buildResultsReport() {
+        // Get handle to results DOM node
+        let container = document.getElementById(this.store.htmlHooks.OUTPUT);
+        
+        // Box container 
+        let box = this.store.utils.createElement('div', { className: 'box' });
+        
+        // Clear all elements from container (start fresh)
+        this.store.utils.removeAllChildren(container);
+        
+        box.appendChild(
+            this.store.utils.createElement('h2', {
+                innerHTML: 'Results:',
+                className: 'title is-3'
+            })
+        );
+        
+        // Build out results for each Collection
+        this.getCollections().forEach(collection => box.appendChild(collection.buildResultsReport()));
+        
+        container.appendChild(box);
+        
+        return container;
     }
 
     /**
@@ -160,7 +209,7 @@ class App {
      */
     buildSubProjectField() {
         return this.store.utils.createElement('h3', {
-            innerHTML: `Sub-Project: ${this.store.subProject}`,
+            innerHTML: `<span class="has-text-weight-semibold">Sub-Project:</span> ${this.store.subProject}`,
             style: 'margin: 3px',
         });
     }
@@ -172,7 +221,7 @@ class App {
      */
     buildDurationField() {
         return this.store.utils.createElement('h3', {
-            innerHTML: `Duration: ${this.getMonthlyDuration()} months`,
+            innerHTML: `<span class="has-text-weight-semibold">Duration:</span> ${this.getMonthlyDuration()} months`,
             style: 'margin: 3px',
         });
     }
@@ -184,23 +233,14 @@ class App {
      */
     buildFirstPeriodField() {
         return this.store.utils.createElement('h3', {
-            innerHTML: `First Period: ${[...this.store.periods][0]}`,
+            innerHTML: `<span class="has-text-weight-semibold">First Period:</span> ${[...this.store.periods][0]}`,
             style: 'margin: 3px',
         });
     }
-
-    buildResultsReport() {
-        // Get handle to results DOM node
-        let container = document.getElementById(this.store.htmlHooks.OUTPUT);
-        // Clear all elements from container (start fresh)
-        this.store.utils.removeAllChildren(container);
-
-        // Heading
-        container.appendChild(this.store.utils.createElement('h1', {
-            innerHTML: 'Results:'
-        }));
-
-        // Build out results for each Collection
-        this.getCollections().forEach(collection => container.appendChild(collection.buildResultsReport()));
+    
+    buildReloadButton() {
+        let button = this.store.utils.createElement('button', { innerHTML: 'Restart', className: 'button is-danger is-outlined' });
+        button.onclick = e => location.reload();
+        return button;
     }
 };

@@ -2,27 +2,32 @@
 <html>
 <head>
     <title>Planner Adjustments</title>
-    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <!-- <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet"> -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" type="text/css" href="./css/bulma.css">
     <link rel="stylesheet" type="text/css" href="./css/style.css">
 </head>
 <body>
 
-    <div class="wrapper" id="initialControls">
-        <input type="file" id="dataInput" name="dataInput" class="inputFile"/>
-        <label for="dataInput"><div class="inner"><i class="material-icons">input</i>&nbsp;&nbsp; Choose a .csv file...</div></label>
-        
-        <!-- <p id="noFile" style="text-decoration: underline; cursor: pointer">or continue without a file...</p> -->
-    </div>
+    <div class="container main">
     
-    <div id="app">
-    
-        <div id="status"></div>
+        <div id="initialControls">
+            <div class="box choose-file">
+                <input type="file" id="dataInput" name="dataInput" class="inputFile"/>
+                <label for="dataInput"><div class="inner"><i class="material-icons">input</i>&nbsp;&nbsp; Choose a .csv file...</div></label>
+                <!-- <p id="noFile" style="text-decoration: underline; cursor: pointer">or continue without a file...</p> -->
+            </div>
+        </div>
         
-        <div id="report"></div>
-    
-        <div id="output"></div>
+        <div id="app">
         
+            <div id="status"></div>
+            
+            <div id="report"></div>
+        
+            <div id="output"></div>
+            
+        </div>
     </div>
     
     <!-- Scripts -->

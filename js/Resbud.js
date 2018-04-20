@@ -127,6 +127,8 @@ class Resbud {
             row.appendChild(this.generateField(this.getCodeText()));
             row.appendChild(this.generateField(this.store.subProject));
             row.appendChild(this.generateField(this.newBudget.data[i]));
+            row.appendChild(this.generateField(this.store.periods[i]));
+            row.appendChild(this.generateField(this.store.description));
             rows.push(row);
         }
         

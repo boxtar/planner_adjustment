@@ -127,7 +127,7 @@
                  complete: (results, file) => startProcessing(results.data, store),
                  skipEmptyLines: true,
                  header: true,
-                 dynamicTyping: true
+                 dynamicTyping: true,
              });
          } else {
              document.getElementById(store.constants.STATUS).innerHTML += '<p>No file chosen</p>';
@@ -173,8 +173,6 @@ function startProcessing(input, store) {
              * confirm new budgets and process results.
              */
             app.buildSummaryReport();
-
-            console.log(app);
             
         } catch (err) {
             

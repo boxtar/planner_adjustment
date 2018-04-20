@@ -1,6 +1,20 @@
 
 html, body {
-    font-family: 'Montserrat', sans-serif;
+    /* font-family: 'Montserrat', sans-serif; */
+    background: whitesmoke;
+}
+
+.container.main {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+#initialControls {
+    text-align: center
+}
+
+#initialControls .choose-file {
+    display: inline-block;
 }
 
 .inputFile {
@@ -32,25 +46,8 @@ html, body {
     display: flex;
 }
 
-.wrapper {
-    /* display: inline-block; */
-    /* padding: 25px; */
-    /* background-color: rgba(206, 83, 64, 0.48); */
-    margin: 20px 0 20px 5px;
-}
-
-table tr {
-    padding-bottom: 5px;
-}
-
-table tr td {
-    padding: 5px 10px;
-    border: 1px solid lightslategrey;
-    cursor: default;
-}
-table tr th {
-    padding: 5px 10px;
-    text-align: left;
+.table td, .table th {
+    vertical-align: middle;
 }
 
 .newBudgetInput {
@@ -64,5 +61,17 @@ table tr th {
     background-color: yellow;
     cursor: pointer;
 }
+
+.addBudgetContainer {
+    margin: 8px 0;
+}
+.addBudgetContainer > .select {
+    margin: 0 8px 0 0;
+}
+
+#output {
+    margin-top: 1.5rem;
+}
+
 
 
