@@ -1,18 +1,21 @@
 /**
- |---------------------------------------------
- | App class
- | 
- | Imports:
- | import DataCollection from DataCollection.js
- |
- | The main class - should only be 1 instance.
- | Will hold all data and expose required
- | functionality.
- |---------------------------------------------
+ * App class by Johnpaul McMahon
+ * 
+ * There should only be 1 instance of this class.
+ * It will receive a store object from instantiator
+ * and will control the displaying and updating of all
+ * data.
+ * 
+ * Imports:
+ * import DataCollection from DataCollection.js
  */
 
 class App {
 
+    /**
+     * 
+     * @param {Object} store
+     */
     constructor(store) {
         // Shared store. Only give what is required to other components (Flux-like architecture)
         this.store = store
@@ -29,58 +32,45 @@ class App {
     }
 
     /**
-     * Initialise application data and hooks
+     * Initialise App and setup Collections of Resbuds
+     * 
+     * @param {Array} input
      */
     init(input) {
-        this.initialiseCollections(input);
         this.setSubProject(input[0][this.store.constants.SUB_PROJECT]);
         this.setDescription(input[0][this.store.constants.DESCRIPTION]);
         this.setPeriods(input);
+        this.initialiseCollections(input);
     }
 
     /**
-     * Initialise collections of Resbud data
+     * Initialise Collections of Resbud objects
      *
-     * @param Array input - List of objects 
-     * @return Void 
+     * @param {Array} input - List of objects 
      */
-    initialiseCollections (input) {
-        
-        console.log(input);
-        
-        // Locals
+    initialiseCollections(input) {
         let collection;
         let collections = new Set();
-        
-        // Get list of DataCollections to be created by parsing input for unique values in the TYPE column
-        input.forEach( record => collections.add(record[this.store.constants.TYPE]) );
-        
-        collections.forEach( name => {
-            
-            collection = new DataCollection(name, this.store.constants);
-            
-            collection.init( input.filter( record => record[this.store.constants.TYPE] === collection.name ) );
-            
-            this.store.collections.push(collection);
-            
-        });
-    }
 
-    /**
-     * Set the Collections
-     *
-     * @param Array collections 
-     * @return Void 
-     */
-    setCollections(...collections) {
-        collections.forEach(c => this.collections.push(c))
+        // Get list of DataCollections to be created by parsing input for unique values in the TYPE column
+        input.forEach(record => collections.add(record[this.store.constants.TYPE]));
+
+        collections.forEach(name => {
+            collection = new DataCollection(name, this.getMonthlyDuration(), {
+                ...this.store,
+                subProject: this.store.subProject,
+                description: this.store.description,
+                periods: [...this.store.periods],
+            });
+            collection.init(input.filter(record => record[this.store.constants.TYPE] === collection.getType()));
+            this.store.collections.push(collection);
+        });
     }
 
     /**
      * Set the Sub Project
      *
-     * @param String sp 
-     * @return String this.subProject 
+     * @param {String} sp 
      */
     setSubProject(sp) {
         this.store.subProject = sp
@@ -89,8 +79,7 @@ class App {
     /**
      * Set the Description
      *
-     * @param String desc 
-     * @return String this.description 
+     * @param {String} desc
      */
     setDescription(desc) {
         this.store.description = desc
@@ -99,88 +88,119 @@ class App {
     /**
      * Set the Periods
      *
-     * @param Array p 
+     * @param {Array} input - Array of data to be scanned for unique period values 
      * @return Array this.periods 
      */
     setPeriods(input) {
         input.forEach(record => this.store.periods.add(record[this.store.constants.PERIOD]));
     }
-    
-    
-    generateSummaryReport () {
-        this.store.collections.forEach( collection => document.getElementById(this.store.htmlHooks.REPORT).appendChild(collection.generateSummaryReport()));
-        
+
+    /**
+     * Returns array of DataCollection objects
+     */
+    getCollections() {
+        return this.store.collections
     }
 
-    renderInputReport() {
-        let output = [];
-        this.collections.forEach(collection => {
-            output.push('<h3>', collection.name, ' Summary</h3>');
-            output.push('<table>');
-            output.push(this.getTableHeadingMarkup());
-            collection.data.forEach(resbud => {
-                output.push(this.getTableRowMarkup(
-                    collection.name, 
-                    resbud.name,
-                    resbud.oldBudget.total,
-                    resbud.newBudget.total
-                ));
-            });
-            output.push('</table>');
+    /**
+     * Use the size of the period list Set to get duration in months.
+     * Will be correct if at least one of the existing Resbuds contains
+     * amounts in all periods of the project.
+     */
+    getMonthlyDuration() {
+        return this.store.periods.size;
+    }
 
-            // Push Markup for adding a new Resbud
-            output.push(this.getNewRowMarkup(collection.name));
+    /**
+     * Kick starts the process of calculating the amendment results
+     * and displays the results
+     */
+    calculateResults() {
+        this.getCollections().forEach(
+            collection => collection.calculateResults()
+        );
+        this.buildResultsReport();
+    }
 
-            // inject the HTML
-            this.setHtmlUsingId(this.reportHtmlHook, output.join(''));
+    /**
+     * Creates and injects Summary Report Element to DOM
+     */
+    buildSummaryReport() {
+        let reportContainer = document.getElementById(this.store.htmlHooks.REPORT);
+
+        // Add field to display sub-project
+        reportContainer.appendChild(this.buildSubProjectField());
+
+        // Add field to display duration
+        reportContainer.appendChild(this.buildDurationField());
+
+        // Add field to display first period
+        reportContainer.appendChild(this.buildFirstPeriodField());
+
+        // Add table with data for each DataCollection
+        this.store.collections.forEach(collection => {
+            reportContainer.appendChild(collection.buildSummaryReport());
+        });
+
+        // Add button with event for calculating results
+        let getResultsButton = this.store.utils.createElement('button', {
+            innerHTML: 'Get Results',
+            id: 'get-results-button'
+        });
+        getResultsButton.onclick = () => this.calculateResults();
+
+        // Add the button to container element
+        reportContainer.appendChild(getResultsButton);
+    }
+
+    /**
+     * Returns DOM Element containing sub-project number
+     * 
+     * @return {Element}
+     */
+    buildSubProjectField() {
+        return this.store.utils.createElement('h3', {
+            innerHTML: `Sub-Project: ${this.store.subProject}`,
+            style: 'margin: 3px',
         });
     }
 
-    renderResults() {
-        //
+    /**
+     * Returns DOM Element containing duration in months
+     * 
+     * @return {Element}
+     */
+    buildDurationField() {
+        return this.store.utils.createElement('h3', {
+            innerHTML: `Duration: ${this.getMonthlyDuration()} months`,
+            style: 'margin: 3px',
+        });
     }
 
-    getTableHeadingMarkup() {
-        let output = [];
-        output.push('<tr>');
-        output.push('<th>', 'Version', '</th>');
-        output.push('<th>', 'Resbud', '</th>');
-        output.push('<th>', 'Current Budget', '</th>');
-        output.push('<th>', 'New Budget', '</th>');
-        output.push('<th>', 'Change', '</th>');
-        output.push('</tr>');
-        return output.join('');
+    /**
+     * Returns DOM Element containing the first period
+     * 
+     * @return {Element}
+     */
+    buildFirstPeriodField() {
+        return this.store.utils.createElement('h3', {
+            innerHTML: `First Period: ${[...this.store.periods][0]}`,
+            style: 'margin: 3px',
+        });
     }
 
-    getNewRowMarkup(type) {
-        let output = [];
-        output.push(`<div id="${type.toLowerCase()}-new-row">`);
-        output.push('<table>');
-        output.push(this.getTableRowMarkup(type, '', 0, 0));
-        output.push('</table>');
-        output.push(`<p data-type="${type.toLowerCase()}">`, 'Add New Resbud', '</p>');
-        output.push('</div>');
-        return output.join('');
-    }
+    buildResultsReport() {
+        // Get handle to results DOM node
+        let container = document.getElementById(this.store.htmlHooks.OUTPUT);
+        // Clear all elements from container (start fresh)
+        this.store.utils.removeAllChildren(container);
 
-    getTableRowMarkup(type, resbud, currentBudget, newBudget) {
-        let output = [];
-        output.push('<tr>');
-        output.push('<td>', type, '</td>');
-        output.push('<td>', resbud, '</td>');
-        output.push('<td ' + redIfNegative(currentBudget) + '>', currentBudget, '</td>');
-        output.push('<td class="newBudgetInput">', '<input type="number" id="', resbud, '" value="', newBudget, '">', '</td>');
-        output.push('<td>', newBudget - currentBudget, '</td>');
-        output.push('</tr>');
-        return output.join('');
-    }
+        // Heading
+        container.appendChild(this.store.utils.createElement('h1', {
+            innerHTML: 'Results:'
+        }));
 
-    setHtmlUsingId(id, html = '') {
-        document.getElementById(id).innerHTML = html;
+        // Build out results for each Collection
+        this.getCollections().forEach(collection => container.appendChild(collection.buildResultsReport()));
     }
-
-    appendToHtmlUsingId(id, html = '') {
-        document.getElementById(id).innerHTML += html;
-    }
-
 };
