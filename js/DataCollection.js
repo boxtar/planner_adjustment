@@ -1,29 +1,25 @@
 /**
- |-----------------------------------------------------
- | DataCollection class
- | NOTE: This class uses Constants defined in main.js
- |
- | Imports:
- | import Resbud from Resbud.js
- |
- | Fields:
- | String name: Version (PBFEC, PBPRICE etc.)
- | Array split: Array holding percentage split per period
- | Array data: Array or Resbud objects.
- |-----------------------------------------------------
+ * DataCollection class by Johnpaul McMahon
+ * 
+ * This class represents a type (FEC, PRICE etc).
+ * Each instance will contain and manage a list of
+ * budgets (Resbud instances).
+ * 
+ * Imports:
+ * import Resbud from Resbud.js
  */
 
 class DataCollection {
-
-    constructor(name, duration, store) {
+    /**
+     * Constructor
+     * 
+     * @param {String} name - type of collection (FEC, PRICE etc)
+     * @param {Object} store - useful data, constants and utils
+     */
+    constructor(name, store) {
         this.store = store
-        // this.constants = this.store.constants;
-        // this.resbudMap = this.store.resbudMap;
         this.name = name;
         this.data = [];
-        this.split = []; // SHould be moved up to App Class
-        this.duration = duration;
-        // this.utils = this.store.utils;
         this.reportTableElement; // Save DOM Element for displaying Resbuds
         this.newBudgetListElement; // Save <select> DOM Element to update the list easier
         this.newBudgetTotalElement; // Save this so that content can be updated on user inputting new budget
@@ -54,12 +50,6 @@ class DataCollection {
                 // If there is more than 1 entry then we have a bug to fix
                 throw "More than 1 Resbud object for " + record[this.store.constants.RESBUD] + " in Collection " + this.name + ".<br/>Duplicates should not be possible - See JPM."
             }
-
-            // If there is a new budget store.amount on this record and new budget hasn't already been
-            // set for this resbud then set it.
-            // if (record[this.store.constants.NEW_BUDGET] !== 0 && resbud.getNewBudget() === 0)
-                // resbud.setNewBudgetTotal(record[this.store.constants.NEW_BUDGET]);
-
             // Push old budget amount onto Resbud
             resbud.pushToOldBudget(record[this.store.constants.CURR_AMOUNT], record[this.store.constants.PERIOD]);
         });
@@ -77,7 +67,6 @@ class DataCollection {
         return this.name;
     }
 
-
     /**
      * Calculate result data
      */
@@ -91,33 +80,35 @@ class DataCollection {
 
     buildSummaryReport() {
         // Generate container for this Collections report
-        let container = this.store.utils.createElement('div', { id: this.name.toLowerCase() + '-report-container' });
-        // container.id = this.name.toLowerCase() + '-report-container';
+        let container = this.store.utils.createElement('div', {
+            id: this.name.toLowerCase() + '-report-container'
+        });
 
         // Generate and append heading for report 
-        container.appendChild(this.store.utils.createElement('h2', { innerHTML: this.name + ' Summary:', className: 'title is-4' }));
+        container.appendChild(this.store.utils.createElement('h2', {
+            innerHTML: this.name + ' Summary:',
+            className: 'title is-4'
+        }));
 
         // Generate report table
-        let report = this.store.utils.createElement('table', { id: this.name.toLowerCase() + '-report', className: 'table' });
+        let report = this.store.utils.createElement('table', {
+            id: this.name.toLowerCase() + '-report',
+            className: 'table'
+        });
         this.reportTableElement = report; // Save report table to this instance
 
         // Add heading row to table
         report.appendChild(this.buildSummaryReportHeader());
-        
+
         // Build the Total row now so that elements can be passed into resbuds for binding to events
         let totalRow = this.buildSummaryTotalRow();
 
         // Generate data for each Resbud 
-        // Passing in DOM Elements and functions with this context bound to this instance so that
-        // Total row at bottom of table can be updated when new budget inputs are changed.
+        // Passing in DOM Elements and functions bound to this instance so that
+        // total row at bottom of table can be updated when new budget inputs are changed.
         // TODO: Look into using Events to deal with this.
-        this.getResbuds().forEach(resbud => report.appendChild(resbud.buildSummaryReport(this.name, {
-            newBudgetTotalElement: this.newBudgetTotalElement,
-            updateNewBudgetTotal: this.calculateNewBudgetTotal.bind(this),
-            amendmentTotalElement: this.amendmentTotalElement,
-            updateAmendmentTotal: this.calculateAdjustmentTotal.bind(this),
-        })));
-        
+        this.getResbuds().forEach(resbud => report.appendChild(this.getSummaryReportForResbud(resbud)));
+
         // Add the totals row to the end of the table
         report.appendChild(totalRow);
 
@@ -129,7 +120,16 @@ class DataCollection {
 
         return container;
     }
-    
+
+    getSummaryReportForResbud(resbud) {
+        return resbud.buildSummaryReport(this.name, {
+            newBudgetTotalElement: this.newBudgetTotalElement,
+            updateNewBudgetTotal: () => this.calculateNewBudgetTotal(),
+            amendmentTotalElement: this.amendmentTotalElement,
+            updateAmendmentTotal: () => this.calculateAdjustmentTotal(),
+        });
+    }
+
     buildResultsReport() {
         // Create the table Element
         let table = this.store.utils.createElement('table', {
@@ -150,10 +150,15 @@ class DataCollection {
 
     buildAddNewBudgetElement() {
         // Container div
-        let newResbudContainer = this.store.utils.createElement('div', { className: 'addBudgetContainer' });
-        
+        let newResbudContainer = this.store.utils.createElement('div', {
+            className: 'addBudgetContainer'
+        });
+
         // Add Button
-        let addResbudButton = this.store.utils.createElement('button', { innerHTML: 'Add Budget', className: 'button is-success' });
+        let addResbudButton = this.store.utils.createElement('button', {
+            innerHTML: 'Add Budget',
+            className: 'button is-success'
+        });
 
         // Append Select dropdown list
         newResbudContainer.appendChild(this.buildBudgetDropdownList(`Add new budget to ${this.name}: `));
@@ -173,7 +178,7 @@ class DataCollection {
                 // Push new Resbud to this Collection
                 this.addResbud(newResbud);
                 // Add Resbud info to the report table - this also sets up new budget input event
-                this.reportTableElement.appendChild(newResbud.buildSummaryReport(this.name));
+                this.reportTableElement.appendChild(this.getSummaryReportForResbud(newResbud));
                 // Now remove the selected option from the <select> list; don't want to add it again
                 select.options.remove(select.selectedIndex);
             }
@@ -189,7 +194,9 @@ class DataCollection {
      * @param {String} labelValue - Label string/User prompt
      */
     buildBudgetDropdownList(labelValue) {
-        let wrapper = this.store.utils.createElement('div', { className: 'select' });
+        let wrapper = this.store.utils.createElement('div', {
+            className: 'select'
+        });
         // let label = document.createElement('label');
         // label.style.display = 'block';
         // label.appendChild(document.createTextNode(labelValue));
@@ -224,28 +231,30 @@ class DataCollection {
         headingRow.appendChild(this.buildHeadingCell('Amendment'));
         return headingRow;
     }
-    
+
     /**
      * Build Table Header row for Summary Report
      */
     buildSummaryTotalRow() {
         let row = this.store.utils.createElement('tfoot');
-        
+
         row.appendChild(this.store.utils.createElement('th'));
         row.appendChild(this.store.utils.createElement('th'));
-        row.appendChild(this.store.utils.createElement('th', {innerHTML: 'TOTALS'}));
-        
+        row.appendChild(this.store.utils.createElement('th', {
+            innerHTML: 'TOTALS'
+        }));
+
         // Current/Old Budget
         row.appendChild(this.store.utils.createElement('th', {
             innerHTML: this.calculateCurrentBudgetTotal()
         }));
-        
+
         // New Budget
         this.newBudgetTotalElement = this.store.utils.createElement('th', {
             innerHTML: this.calculateNewBudgetTotal()
         });
         row.appendChild(this.newBudgetTotalElement);
-        
+
         // Difference
         this.amendmentTotalElement = this.store.utils.createElement('th', {
             innerHTML: this.calculateAdjustmentTotal()
@@ -254,29 +263,33 @@ class DataCollection {
 
         return row;
     }
-    
+
     calculateCurrentBudgetTotal() {
         if (this.getType() === this.store.constants.PRICE) {
-            return this.getResbuds().map( r => r.getOldBudget() ).reduce( (acc, curr) => acc + curr, 0 )
+            return this.getResbuds().map(r => r.getOldBudget()).reduce((acc, curr) => acc + curr, 0)
         } else {
-            return this.getResbuds().map( r => r.getCode() !== 'XZ90' ? r.getOldBudget() : 0 ).reduce( (acc, curr) => acc + curr, 0 )
+            return this.getResbuds().map(r => r.getCode() !== 'XZ90' ? r.getOldBudget() : 0).reduce((acc, curr) => acc + curr, 0)
         }
     }
-    
+
     calculateNewBudgetTotal() {
+        let total = 0;        
         if (this.getType() === this.store.constants.PRICE) {
-            return this.getResbuds().map( r => r.getNewBudget() ).reduce( (acc, curr) => acc + curr, 0 );
+            total = this.getResbuds().map(r => r.getNewBudget()).reduce((acc, curr) => acc + curr, 0);
         } else {
-            return this.getResbuds().map( r => r.getCode() !== 'XZ90' ? r.getNewBudget() : 0 ).reduce( (acc, curr) => acc + curr, 0 );
+            total = this.getResbuds().map(r => r.getCode() !== 'XZ90' ? r.getNewBudget() : 0).reduce((acc, curr) => acc + curr, 0);
         }
+        return Math.round(total);
     }
-    
+
     calculateAdjustmentTotal() {
+        let total = 0;
         if (this.getType() === this.store.constants.PRICE) {
-            return this.getResbuds().map( r => r.getNewBudget() - r.getOldBudget() ).reduce( (acc, curr) => acc + curr, 0 )
+            total = this.getResbuds().map(r => r.getNewBudget() - r.getOldBudget()).reduce((acc, curr) => acc + curr, 0)
         } else {
-            return this.getResbuds().map( r => r.getCode() !== 'XZ90' ? r.getNewBudget() - r.getOldBudget() : 0 ).reduce( (acc, curr) => acc + curr, 0 )
+            total = this.getResbuds().map(r => r.getCode() !== 'XZ90' ? r.getNewBudget() - r.getOldBudget() : 0).reduce((acc, curr) => acc + curr, 0)
         }
+        return Math.round(total);    
     }
 
     /**
@@ -303,6 +316,12 @@ class DataCollection {
         return this.store.utils.createElement('th', {
             innerHTML: value
         });
+    }
+
+    exportData() {
+        let exportData = [];
+        this.getResbuds().forEach(resbud => exportData.push(resbud.exportData(this.getType())));
+        return exportData;
     }
 
     /**

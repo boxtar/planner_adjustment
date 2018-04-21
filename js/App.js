@@ -56,7 +56,7 @@ class App {
         input.forEach(record => collections.add(record[this.store.constants.TYPE]));
 
         collections.forEach(name => {
-            collection = new DataCollection(name, this.getMonthlyDuration(), {
+            collection = new DataCollection(name, {
                 ...this.store,
                 subProject: this.store.subProject,
                 description: this.store.description,
@@ -126,18 +126,18 @@ class App {
      * Creates and injects Summary Report Element to DOM
      */
     buildSummaryReport() {
-        
+
         // Get Parent element
         let reportContainer = document.getElementById(this.store.htmlHooks.REPORT);
-        
+
         // Re-used box element (gets re-assigned multiple times)
         let box = this.store.utils.createElement('div', {
             className: 'box'
         });
-        
+
         // Add box to container
         reportContainer.appendChild(box);
-        
+
         // Add field to display sub-project
         box.appendChild(this.buildSubProjectField());
 
@@ -146,59 +146,51 @@ class App {
 
         // Add field to display first period
         box.appendChild(this.buildFirstPeriodField());
-        
+
+        // Add button with event for calculating results
+        box.appendChild(this.buildCalculateButton());
+
         // Add page refresh button
         box.appendChild(this.buildReloadButton());
 
         // Add table with data for each DataCollection
-        // this.store.collections.forEach(collection => {
-            // reportContainer.appendChild(collection.buildSummaryReport());
-        // });
-        // this.store.collections.forEach(collection => collectionReports.push(collection.buildSummaryReport()));
         this.store.collections.forEach(collection => {
-            
-            box = this.store.utils.createElement('div', { className: 'box' });
+            box = this.store.utils.createElement('div', {
+                className: 'box'
+            });
             box.appendChild(collection.buildSummaryReport());
             reportContainer.appendChild(box);
         });
 
-        // Add button with event for calculating results
-        let getResultsButton = this.store.utils.createElement('button', {
-            innerHTML: 'Fetch Results',
-            id: 'get-results-button',
-            className: 'button is-info',
-        });
-        getResultsButton.onclick = () => this.calculateResults();
-        
-        box = this.store.utils.createElement('div', { className: 'box' });
-        box.appendChild(getResultsButton);
-
-        // Add the button to container element
         reportContainer.appendChild(box);
     }
-    
+
     buildResultsReport() {
         // Get handle to results DOM node
         let container = document.getElementById(this.store.htmlHooks.OUTPUT);
-        
+
         // Box container 
-        let box = this.store.utils.createElement('div', { className: 'box' });
-        
+        let box = this.store.utils.createElement('div', {
+            className: 'box'
+        });
+
         // Clear all elements from container (start fresh)
         this.store.utils.removeAllChildren(container);
-        
+
+        // Add export button
         box.appendChild(
-            this.store.utils.createElement('h2', {
-                innerHTML: 'Results:',
-                className: 'title is-3'
+            this.store.utils.createElement('button', {
+                innerHTML: 'Export Results',
+                className: 'button is-info is-outlined',
+                onclick: () => this.exportResults()
             })
         );
-        
+
         // Build out results for each Collection
         this.getCollections().forEach(collection => box.appendChild(collection.buildResultsReport()));
-        
+
         container.appendChild(box);
-        
+
         return container;
     }
 
@@ -237,10 +229,49 @@ class App {
             style: 'margin: 3px',
         });
     }
-    
+
     buildReloadButton() {
-        let button = this.store.utils.createElement('button', { innerHTML: 'Restart', className: 'button is-danger is-outlined' });
+        let button = this.store.utils.createElement('button', {
+            innerHTML: 'Restart',
+            className: 'button is-danger is-outlined'
+        });
         button.onclick = e => location.reload();
         return button;
+    }
+
+    buildCalculateButton() {
+        // Add button with event for calculating results
+        let button = this.store.utils.createElement('button', {
+            innerHTML: 'Fetch Results',
+            id: 'get-results-button',
+            className: 'button is-info',
+            style: 'margin-right: 8px',
+        });
+        button.onclick = () => this.calculateResults();
+        return button;
+    }
+
+    exportResults() {
+        let csvString = 'data:text/csv;charset=utf-8,';
+        let exportData = [];
+        exportData.push([
+            this.store.constants.TYPE,
+            this.store.constants.RESBUD,
+            this.store.constants.RESBUD + ' (T)',
+            this.store.constants.SUB_PROJECT,
+            this.store.constants.CURR_AMOUNT,
+            this.store.constants.PERIOD,
+            this.store.constants.DESCRIPTION,
+        ].join(','));
+
+        this.getCollections().forEach(collection => {
+            collection.exportData().forEach(resbudData => {
+                resbudData.forEach(row => exportData.push(row.join(',')))
+            });
+        });
+        // Build up csv data and make browser download it as a file
+        exportData.forEach(row => csvString += `${row}\r\n`)
+        let encodedUri = encodeURI(csvString);
+        window.open(encodedUri);
     }
 };

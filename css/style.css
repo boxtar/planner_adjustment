@@ -59,7 +59,7 @@ html, body {
     font-family: 'Montserrat', sans-serif;
     font-size: 16px;
     background-color: yellow;
-    cursor: pointer;
+    cursor: text;
 }
 
 .addBudgetContainer {

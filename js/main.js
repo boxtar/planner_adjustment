@@ -9,7 +9,7 @@
 
 
 // Entry point
-(function(){
+(function () {
 
     /**
      * Shared store object.
@@ -21,15 +21,15 @@
      */
     const store = {
         constants: Object.freeze({
-            TYPE:'Version',
-            FEC:'PBFEC',
-            PRICE:'PBPRICE',
-            RESBUD:'Resbud',
-            NEW_BUDGET:'PCB Budget',
-            CURR_AMOUNT:'Curr. amount',
-            SUB_PROJECT:'Sub-Project',
-            DESCRIPTION:'Description',
-            PERIOD:'Period',
+            TYPE: 'Version',
+            FEC: 'PBFEC',
+            PRICE: 'PBPRICE',
+            RESBUD: 'Resbud',
+            NEW_BUDGET: 'PCB Budget',
+            CURR_AMOUNT: 'Curr. amount',
+            SUB_PROJECT: 'Sub-Project',
+            DESCRIPTION: 'Description',
+            PERIOD: 'Period',
         }),
         htmlHooks: Object.freeze({
             APP: 'app',
@@ -50,7 +50,7 @@
             XE10: 'Equipment',
             XF10: 'Equipment Large Capital',
             XZ11: 'Estates Costs',
-            XQ10: 'Exceptional Items',            
+            XQ10: 'Exceptional Items',
             XZ90: 'Income',
             XZ10: 'Indirects',
             XS10: 'Market Assessment',
@@ -79,7 +79,7 @@
         utils: Object.freeze({
             createElement: (element, options = {}) => {
                 element = document.createElement(element);
-                Object.keys(options).forEach( option => {
+                Object.keys(options).forEach(option => {
                     element[option] = options[option];
                 });
                 return element;
@@ -87,7 +87,7 @@
             removeAllChildren: element => {
                 while (element.firstChild)
                     element.removeChild(element.firstChild);
-            }
+            },
         }),
     };
 
@@ -118,22 +118,22 @@
  |--------------------------------------------------
  */
 
- function getFileSelectedHander(store) {
-     return e => {
-         let files = e.target.files; // FileList object
-         if (files.length > 0) {
-             // Use Papa to parse CSV file:
-             let data = Papa.parse(files[0], {
-                 complete: (results, file) => startProcessing(results.data, store),
-                 skipEmptyLines: true,
-                 header: true,
-                 dynamicTyping: true,
-             });
-         } else {
-             document.getElementById(store.constants.STATUS).innerHTML += '<p>No file chosen</p>';
-         }
-     };
- };
+function getFileSelectedHander(store) {
+    return e => {
+        let files = e.target.files; // FileList object
+        if (files.length > 0) {
+            // Use Papa to parse CSV file:
+            let data = Papa.parse(files[0], {
+                complete: (results, file) => startProcessing(results.data, store),
+                skipEmptyLines: true,
+                header: true,
+                dynamicTyping: true,
+            });
+        } else {
+            document.getElementById(store.constants.STATUS).innerHTML += '<p>No file chosen</p>';
+        }
+    };
+};
 
 
 /**
@@ -151,9 +151,9 @@
 function startProcessing(input, store) {
 
     document.getElementById(store.htmlHooks.INITIAL_CONTROLS).style.display = "none";
-    
+
     if (input.length > 0) {
-        
+
         try {
             // filter out summary/blank rows
             let data = input.filter(row => row[store.constants.PERIOD] != false);
@@ -161,23 +161,24 @@ function startProcessing(input, store) {
             // Check for empty input which would mean no budgets in planner
             if (data.length === 0) throw "No budgets. Use RSO - 'RESBUD Costs per Period' enquiry";
 
+
             // Instantiate new App instance
             let app = new App(store);
-            
+
             // Initialise App with the parsed data
             app.init(data);
-            
+
             /**
              * Renders initial report for user to input new budgets
              * This also sets up the event for the user to
              * confirm new budgets and process results.
              */
             app.buildSummaryReport();
-            
+
         } catch (err) {
-            
+
             document.getElementById(store.htmlHooks.APP).innerHTML = "<div style=\"color: red\"><h2>ERROR: </h2><h4>" + err + "</h4></div>";
-            
+
             console.error(err);
         }
     }
