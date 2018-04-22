@@ -1,31 +1,43 @@
 Version,Resbud,Resbud(T),Sub-Project,Period,Description,Amount,Curr. amount,PCB Budget,Amendment,
+PBFEC,XG10,Studentships,302906-01,0,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,500,0,0
+PBFEC,XG10,Studentships,302906-01,0,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,500,0,0
 PBFEC,XG10,Studentships,302906-01,201807,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,500,500,0,0,12.3762%
 PBFEC,XG10,Studentships,302906-01,201808,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,500,500,0,0,12.3762%
 PBFEC,XG10,Studentships,302906-01,201809,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,750,750,0,0,18.5644%
 PBFEC,XG10,Studentships,302906-01,201810,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,790,790,0,0,19.5545%
 PBFEC,XG10,Studentships,302906-01,201811,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,1500,1500,0,0,37.1287%
-PBFEC,XG10,Studentships,302906-01,,,4040,4040,0,0,
+PBFEC,XG10,Studentships,302906-01,201812,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,1500,1500,0,0,37.1287%
+PBFEC,XG10,Studentships,302906-01,201901,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,1500,1500,0,0,37.1287%
+PBFEC,XG10,Studentships,302906-01,201902,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,1500,1500,0,0,37.1287%
+PBFEC,XG10,Studentships,302906-01,201903,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,1500,1500,0,0,37.1287%
+PBFEC,XG10,Studentships,302906-01,201904,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,1500,1500,0,0,37.1287%
+PBFEC,XG10,Studentships,302906-01,201905,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,1500,1500,0,0,37.1287%
+PBFEC,XG10,Studentships,302906-01,201906,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,1960,1960,0,0,37.1287%
+PBFEC,XG10,Studentships,302906-01,,,15000,15000,0,0,
+PBFEC,XZ90,Income,302906-01,0,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0
 PBFEC,XZ90,Income,302906-01,201807,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
 PBFEC,XZ90,Income,302906-01,201808,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
 PBFEC,XZ90,Income,302906-01,201809,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
 PBFEC,XZ90,Income,302906-01,201810,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
 PBFEC,XZ90,Income,302906-01,201811,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
+PBFEC,XZ90,Income,302906-01,201812,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
+PBFEC,XZ90,Income,302906-01,201901,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
+PBFEC,XZ90,Income,302906-01,201902,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
+PBFEC,XZ90,Income,302906-01,201903,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
+PBFEC,XZ90,Income,302906-01,201904,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
+PBFEC,XZ90,Income,302906-01,201905,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
+PBFEC,XZ90,Income,302906-01,201906,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,-2500,-2500,0,0,
 PBFEC,XZ90,Income,302906-01,,,-30000,-30000,0,0,
-PBFEC,XT10,Student Matric Fees,302906-01,201807,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XT10,Student Matric Fees,302906-01,201808,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XT10,Student Matric Fees,302906-01,201809,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XT10,Student Matric Fees,302906-01,201810,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XT10,Student Matric Fees,302906-01,201811,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XT10,Student Matric Fees,302906-01,,,30000,30000,0,0,
-PBFEC,XW10,Others,302906-01,201807,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XW10,Others,302906-01,201808,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XW10,Others,302906-01,201809,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XW10,Others,302906-01,201810,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XW10,Others,302906-01,201811,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,0,0,0,0,
-PBFEC,XW10,Others,302906-01,,,0,0,0,0,
 PBPRICE,XZ90,Income,302906-01,201807,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
 PBPRICE,XZ90,Income,302906-01,201808,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
 PBPRICE,XZ90,Income,302906-01,201809,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
 PBPRICE,XZ90,Income,302906-01,201810,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
 PBPRICE,XZ90,Income,302906-01,201811,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
+PBPRICE,XZ90,Income,302906-01,201812,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
+PBPRICE,XZ90,Income,302906-01,201901,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
+PBPRICE,XZ90,Income,302906-01,201902,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
+PBPRICE,XZ90,Income,302906-01,201903,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
+PBPRICE,XZ90,Income,302906-01,201904,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
+PBPRICE,XZ90,Income,302906-01,201905,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
+PBPRICE,XZ90,Income,302906-01,201906,Project: 302906 Proposed Start: 01/02/2018 - Proposed End: 31/07/2021,2500,2500,0,0,
 PBPRICE,XZ90,Income,302906-01,,,30000,3000,0,0,

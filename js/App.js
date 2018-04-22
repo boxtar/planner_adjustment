@@ -89,10 +89,13 @@ class App {
      * Set the Periods
      *
      * @param {Array} input - Array of data to be scanned for unique period values 
-     * @return Array this.periods 
      */
     setPeriods(input) {
+        // Loop over all input records and the period values to the Set.
+        // Using a set as they automatically strip out duplicate values.
         input.forEach(record => this.store.periods.add(record[this.store.constants.PERIOD]));
+        // convert to array
+        this.store.periods = [...this.store.periods];
     }
 
     /**
@@ -108,7 +111,7 @@ class App {
      * amounts in all periods of the project.
      */
     getMonthlyDuration() {
-        return this.store.periods.size;
+        return this.store.periods.length;
     }
 
     /**
@@ -147,12 +150,6 @@ class App {
         // Add field to display first period
         box.appendChild(this.buildFirstPeriodField());
 
-        // Add button with event for calculating results
-        box.appendChild(this.buildCalculateButton());
-
-        // Add page refresh button
-        box.appendChild(this.buildReloadButton());
-
         // Add table with data for each DataCollection
         this.store.collections.forEach(collection => {
             box = this.store.utils.createElement('div', {
@@ -162,6 +159,18 @@ class App {
             reportContainer.appendChild(box);
         });
 
+        // New box for Fetch and Restart buttons
+        box = this.store.utils.createElement('div', {
+            className: 'box'
+        });
+
+        // Add button with event for calculating results
+        box.appendChild(this.buildCalculateButton());
+
+        // Add page refresh button
+        box.appendChild(this.buildReloadButton());
+
+        // Add fetch results box to container
         reportContainer.appendChild(box);
     }
 
@@ -200,10 +209,15 @@ class App {
      * @return {Element}
      */
     buildSubProjectField() {
-        return this.store.utils.createElement('h3', {
-            innerHTML: `<span class="has-text-weight-semibold">Sub-Project:</span> ${this.store.subProject}`,
-            style: 'margin: 3px',
-        });
+        return this.buildFormElement(
+            'Sub-project', // Label text
+            () => false, // onchange handler (no change events expected)
+            {
+                type: 'text', // Input type
+                value: this.store.subProject, // Input value
+                disabled: 'disabled'
+            }
+        );
     }
 
     /**
@@ -212,10 +226,15 @@ class App {
      * @return {Element}
      */
     buildDurationField() {
-        return this.store.utils.createElement('h3', {
-            innerHTML: `<span class="has-text-weight-semibold">Duration:</span> ${this.getMonthlyDuration()} months`,
-            style: 'margin: 3px',
-        });
+        return this.buildFormElement(
+            'Duration', // Label text
+            () => this.handleDurationChange(), // onchange handler
+            {
+                type: 'number', // Input type
+                value: this.getMonthlyDuration(), // Input value
+                disabled: 'disabled'
+            }
+        );
     }
 
     /**
@@ -224,10 +243,78 @@ class App {
      * @return {Element}
      */
     buildFirstPeriodField() {
-        return this.store.utils.createElement('h3', {
-            innerHTML: `<span class="has-text-weight-semibold">First Period:</span> ${[...this.store.periods][0]}`,
-            style: 'margin: 3px',
+        return this.buildFormElement(
+            'First Period', // Label text
+            () => this.handleFirstPeriodChange(), // onchange handler
+            {
+                type: 'number', // Input type
+                value: [...this.store.periods][0], // Input value
+                disabled: 'disabled',
+            }
+        );
+    }
+
+    buildFormElement(labelText, handler, inputOptions) {
+        // Container element
+        let container = this.store.utils.createElement('div', {
+            className: 'field is-horizontal',
         });
+        // Label element
+        let label = this.buildLabel(labelText); // VARIABLE
+        // Input container element
+        let inputContainer = this.buildInputContainer();
+        // Input element (need this to attached event handler)
+        let input = this.buildInput(inputOptions);
+        // Add input element to the input container
+        inputContainer.appendChild(input);
+        // Attach event handler to input element
+        if (handler !== undefined)
+            input.onchange = handler;
+        //Attach the label and input container elements
+        container.appendChild(label);
+        container.appendChild(inputContainer);
+        return container
+    }
+
+    buildLabel(labelText) {
+        return this.store.utils.createElement('div', {
+            className: 'field-label is-normal',
+            innerHTML: `<label class="label">${labelText}</label>`
+        });
+    }
+
+    buildInput(options = {}) {
+        let input = this.store.utils.createElement('input', {
+            className: 'input',
+        });
+        Object.keys(options).forEach(key => {
+            if (key === 'className')
+                input.className += ` ${options.className}`
+            else
+                input[key] = options[key]
+        });
+        return input;
+    }
+
+    buildInputContainer() {
+        let container = this.store.utils.createElement('div', {
+            className: 'field-body'
+        });
+        container.appendChild(this.store.utils.createElement('div', {
+            className: 'field'
+        }));
+        container.appendChild(this.store.utils.createElement('div', {
+            className: 'control'
+        }));
+        return container;
+    }
+
+    handleDurationChange() {
+        console.log(this.getMonthlyDuration());
+    }
+
+    handleFirstPeriodChange() {
+        console.log([...this.store.periods][0]);
     }
 
     buildReloadButton() {
