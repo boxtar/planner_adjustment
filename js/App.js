@@ -141,6 +141,12 @@ class App {
         // Add box to container
         reportContainer.appendChild(box);
 
+        // Add info notification
+        box.appendChild(this.store.utils.createElement('div', {
+            innerHTML: 'Please check the below details. If anything is incorrect then see Johnpaul before proceeding.',
+            className: 'notification is-info has-text-centered',
+        }));
+
         // Add field to display sub-project
         box.appendChild(this.buildSubProjectField());
 
