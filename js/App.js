@@ -364,7 +364,13 @@ class App {
         });
         // Build up csv data and make browser download it as a file
         exportData.forEach(row => csvString += `${row}\r\n`)
-        let encodedUri = encodeURI(csvString);
-        window.open(encodedUri);
+        let link = this.store.utils.createElement('a', {
+            href: encodeURI(csvString),
+            download: `${this.store.subProject}_export.csv`,
+            innerHTML: 'Download',
+            style: 'display: none'
+        });
+        document.body.appendChild(link);
+        link.click();
     }
 };
