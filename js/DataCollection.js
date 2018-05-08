@@ -233,7 +233,8 @@ class DataCollection {
     }
 
     /**
-     * Build Table Header row for Summary Report
+     * Build Table Footer row for Summary Report.
+     * Shows Totals in each column
      */
     buildSummaryTotalRow() {
         let row = this.store.utils.createElement('tfoot');

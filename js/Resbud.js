@@ -176,7 +176,7 @@ class Resbud {
             className: 'newBudgetInput',
         });
 
-        // // Create New Budget Input Field to attach to cell        
+        // Create New Budget Input Field to attach to cell        
         let newBudgetInput = this.store.utils.createElement('input', {
             value: Math.round(this.getOldBudget()),
             type: 'text',
@@ -194,7 +194,8 @@ class Resbud {
 
             // Simply sets the new budget total amount
             // TODO: validate input so that it only accepts valid numbers (beware of '-')
-            this.setNewBudgetTotal(parseFloat(newBudgetInput.value));
+            // The regex inside replace removes all pound symbols and commas as they don't play well with parseFloat
+            this.setNewBudgetTotal(parseFloat(newBudgetInput.value.replace(/[£,]/g, '')));
 
             // Update Amendment/Difference Element
             this.amendmentElement.innerHTML = Math.round(this.getBudgetChange());
