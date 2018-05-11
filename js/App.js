@@ -126,7 +126,8 @@ class App {
     }
 
     /**
-     * Creates and injects Summary Report Element to DOM
+     * Creates and injects Summary Report Element to DOM.
+     * This is where users input new budget amounts.
      */
     buildSummaryReport() {
 
@@ -156,7 +157,8 @@ class App {
         // Add field to display first period
         box.appendChild(this.buildFirstPeriodField());
 
-        // Add table with data for each DataCollection
+        // Create a box for each Collection and append the result of
+        // calling eaching Collection's buildSummaryReport method.
         this.store.collections.forEach(collection => {
             box = this.store.utils.createElement('div', {
                 className: 'box'
@@ -180,6 +182,9 @@ class App {
         reportContainer.appendChild(box);
     }
 
+    /**
+     * Outputs another box with a table showing the results
+     */
     buildResultsReport() {
         // Get handle to results DOM node
         let container = document.getElementById(this.store.htmlHooks.OUTPUT);

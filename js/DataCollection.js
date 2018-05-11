@@ -74,40 +74,46 @@ class DataCollection {
         this.getResbuds().forEach(resbud => resbud.calculateResults());
     }
 
+    /**
+     * Creates and returns a new Resbud instance
+     * 
+     * @param {String} resbud - Resbud Code
+     */
     newResbud(resbud) {
         return new Resbud(resbud, this.store.resbudMap[resbud], this.store);
     }
 
+    /**
+     * Builds the summary report that lets Users input new budget amounts.
+     */
     buildSummaryReport() {
-        // Generate container for this Collections report
+        // Build the container that will eventually be returned
         let container = this.store.utils.createElement('div', {
             id: this.name.toLowerCase() + '-report-container'
         });
 
-        // Generate and append heading for report 
-        container.appendChild(this.store.utils.createElement('h2', {
-            innerHTML: this.name + ' Summary:',
-            className: 'title is-4'
-        }));
+        // Listen for budget change event (fired by Resbuds when User inputs new budgets)
+        container.addEventListener(this.store.constants.BUDGET_CHANGE_EVENT, e => this.handleBudgetChangeEvent(e), false);
+
+        // Generate and append heading for report
+        container.appendChild(this.getHeadingElement());
 
         // Generate report table
-        let report = this.store.utils.createElement('table', {
-            id: this.name.toLowerCase() + '-report',
-            className: 'table'
-        });
-        this.reportTableElement = report; // Save report table to this instance
+        let report = this.generateTableElement(`${this.getType().toLowerCase()}-summary-report`);
 
-        // Add heading row to table
-        report.appendChild(this.buildSummaryReportHeader());
+        // Save report table to this instance for future referencing.
+        // Example: appending new resbuds.
+        this.reportTableElement = report;
+
+        // Add header row to table
+        report.appendChild(this.getHeaderRowForSummary());
 
         // Build the Total row now so that elements can be passed into resbuds for binding to events
-        let totalRow = this.buildSummaryTotalRow();
+        let totalRow = this.getFooterRowForSummary();
 
-        // Generate data for each Resbud 
-        // Passing in DOM Elements and functions bound to this instance so that
-        // total row at bottom of table can be updated when new budget inputs are changed.
-        // TODO: Look into using Events to deal with this.
-        this.getResbuds().forEach(resbud => report.appendChild(this.getSummaryReportForResbud(resbud)));
+        // For each Resbud call it's buildSummaryReport method and append the returned
+        // <tr> Element onto the report <table>.
+        this.getResbuds().forEach(resbud => report.appendChild(resbud.buildSummaryReport(this.name)));
 
         // Add the totals row to the end of the table
         report.appendChild(totalRow);
@@ -121,21 +127,12 @@ class DataCollection {
         return container;
     }
 
-    getSummaryReportForResbud(resbud) {
-        return resbud.buildSummaryReport(this.name, {
-            newBudgetTotalElement: this.newBudgetTotalElement,
-            updateNewBudgetTotal: () => this.calculateNewBudgetTotal(),
-            amendmentTotalElement: this.amendmentTotalElement,
-            updateAmendmentTotal: () => this.calculateAdjustmentTotal(),
-        });
-    }
-
+    /**
+     * Produces the table housing the results for exporting
+     */
     buildResultsReport() {
         // Create the table Element
-        let table = this.store.utils.createElement('table', {
-            className: 'table',
-            id: `${this.getType().toLowerCase()}-results-table`
-        });
+        let table = this.generateTableElement(`${this.getType().toLowerCase()}-results-table`);
 
         // Build out table rows for each Resbud
         let rows = [];
@@ -146,6 +143,31 @@ class DataCollection {
             rows.forEach(row => table.appendChild(row));
         }
         return table;
+    }
+
+    getHeadingElement() {
+        return this.store.utils.createElement('h2', {
+            innerHTML: `${this.name}`,
+            className: 'title is-3'
+        })
+    }
+
+    /**
+     * Handle User input on New Budget input fields.
+     * This handler simply updates the total cells in the footer of the report.
+     * 
+     * @param {CustomEvent} e - Custom Event object fired by a Resbud
+     */
+    handleBudgetChangeEvent(e) {
+        this.newBudgetTotalElement.innerHTML = this.calculateNewBudgetTotal();
+        this.amendmentTotalElement.innerHTML = this.calculateAdjustmentTotal();
+    }
+
+    generateTableElement(id = '') {
+        return this.store.utils.createElement('table', {
+            className: 'table',
+            id
+        });
     }
 
     buildAddNewBudgetElement() {
@@ -178,7 +200,7 @@ class DataCollection {
                 // Push new Resbud to this Collection
                 this.addResbud(newResbud);
                 // Add Resbud info to the report table - this also sets up new budget input event
-                this.reportTableElement.appendChild(this.getSummaryReportForResbud(newResbud));
+                this.reportTableElement.appendChild(newResbud.buildSummaryReport(this.getType()));
                 // Now remove the selected option from the <select> list; don't want to add it again
                 select.options.remove(select.selectedIndex);
             }
@@ -194,16 +216,14 @@ class DataCollection {
      * @param {String} labelValue - Label string/User prompt
      */
     buildBudgetDropdownList(labelValue) {
+        // Select Container element
         let wrapper = this.store.utils.createElement('div', {
             className: 'select'
         });
-        // let label = document.createElement('label');
-        // label.style.display = 'block';
-        // label.appendChild(document.createTextNode(labelValue));
+        // Select element
         let select = document.createElement('select');
-
+        // Save copy of select element to this instance for future use
         this.newBudgetListElement = select;
-
         // Setup select list using filtered list of resbuds
         let option;
         for (const resbud in this.getFilteredResbudList()) {
@@ -212,8 +232,6 @@ class DataCollection {
             option.appendChild(document.createTextNode(this.store.resbudMap[resbud]));
             this.newBudgetListElement.appendChild(option);
         }
-
-        // wrapper.appendChild(label);
         wrapper.appendChild(select);
         return wrapper;
     }
@@ -221,7 +239,7 @@ class DataCollection {
     /**
      * Build Table Footer (Totals) row for Summary Report
      */
-    buildSummaryReportHeader() {
+    getHeaderRowForSummary() {
         let headingRow = document.createElement('thead');
         headingRow.appendChild(this.buildHeadingCell(this.store.constants.TYPE));
         headingRow.appendChild(this.buildHeadingCell(this.store.constants.RESBUD));
@@ -236,32 +254,27 @@ class DataCollection {
      * Build Table Footer row for Summary Report.
      * Shows Totals in each column
      */
-    buildSummaryTotalRow() {
+    getFooterRowForSummary() {
         let row = this.store.utils.createElement('tfoot');
-
         row.appendChild(this.store.utils.createElement('th'));
         row.appendChild(this.store.utils.createElement('th'));
         row.appendChild(this.store.utils.createElement('th', {
             innerHTML: 'TOTALS'
         }));
-
         // Current/Old Budget
         row.appendChild(this.store.utils.createElement('th', {
             innerHTML: this.calculateCurrentBudgetTotal()
         }));
-
-        // New Budget
+        // New Budget - save a copy to instance for updating in future
         this.newBudgetTotalElement = this.store.utils.createElement('th', {
             innerHTML: this.calculateNewBudgetTotal()
         });
         row.appendChild(this.newBudgetTotalElement);
-
-        // Difference
+        // Difference - save a copy to instance for updating in future
         this.amendmentTotalElement = this.store.utils.createElement('th', {
             innerHTML: this.calculateAdjustmentTotal()
         });
         row.appendChild(this.amendmentTotalElement);
-
         return row;
     }
 
@@ -274,13 +287,13 @@ class DataCollection {
     }
 
     calculateNewBudgetTotal() {
-        let total = 0;        
+        let total = 0;
         if (this.getType() === this.store.constants.PRICE) {
             total = this.getResbuds().map(r => r.getNewBudget()).reduce((acc, curr) => acc + curr, 0);
         } else {
             total = this.getResbuds().map(r => r.getCode() !== 'XZ90' ? r.getNewBudget() : 0).reduce((acc, curr) => acc + curr, 0);
         }
-        return Math.round(total);
+        return this.store.utils.roundToTwo(total);
     }
 
     calculateAdjustmentTotal() {
@@ -290,7 +303,7 @@ class DataCollection {
         } else {
             total = this.getResbuds().map(r => r.getCode() !== 'XZ90' ? r.getNewBudget() - r.getOldBudget() : 0).reduce((acc, curr) => acc + curr, 0)
         }
-        return Math.round(total);    
+        return this.store.utils.roundToTwo(total);
     }
 
     /**
@@ -309,7 +322,7 @@ class DataCollection {
     }
 
     /**
-     * Re-use code for producing header row in generateReportHeader()
+     * Builds and returns a <th> element
      * 
      * @param {String} value - Heading string
      */

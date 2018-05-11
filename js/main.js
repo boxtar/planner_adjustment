@@ -30,6 +30,7 @@
             SUB_PROJECT: 'Sub-Project',
             DESCRIPTION: 'Description',
             PERIOD: 'Period',
+            BUDGET_CHANGE_EVENT: 'newBudgetChanged'
         }),
         htmlHooks: Object.freeze({
             APP: 'app',
@@ -88,6 +89,10 @@
                 while (element.firstChild)
                     element.removeChild(element.firstChild);
             },
+            roundToTwo(num) {
+                // see https://stackoverflow.com/a/18358056
+                return +(Math.round(num + "e+2") + "e-2");
+            }
         }),
     };
 
@@ -174,6 +179,8 @@ function startProcessing(input, store) {
              * confirm new budgets and process results.
              */
             app.buildSummaryReport();
+
+            console.log(app)
 
         } catch (err) {
 

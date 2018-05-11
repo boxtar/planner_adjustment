@@ -42,24 +42,24 @@ class Resbud {
         this.oldBudget.push(amount);
         // Push the period
         this.pushToPeriods(period);
-        // Default new budget to current budget so update that too
+        // Default new budget to current budget so update that too.
         this.newBudget += amount;
     }
 
     getOldBudget() {
-        return this.oldBudget.reduce((acc, curr) => acc + curr, 0);
+        return this.store.utils.roundToTwo(this.oldBudget.reduce((acc, curr) => acc + curr, 0));
     }
 
     getNewBudget() {
-        return this.newBudget;
+        return this.store.utils.roundToTwo(this.newBudget);
     }
 
     getAmendmentTotal() {
-        return this.amendmentData.reduce((acc, curr) => acc + curr, 0);
+        return this.store.utils.roundToTwo(this.amendmentData.reduce((acc, curr) => acc + curr, 0));
     }
 
     setNewBudgetTotal(total) {
-        this.newBudget = total;
+        this.newBudget = this.store.utils.roundToTwo(total);
     }
 
     pushToPeriods(period) {
@@ -67,7 +67,7 @@ class Resbud {
     }
 
     getBudgetChange() {
-        return this.getNewBudget() - this.getOldBudget();
+        return this.store.utils.roundToTwo(this.getNewBudget() - this.getOldBudget());
     }
 
     getCode() {
@@ -88,7 +88,7 @@ class Resbud {
         if (amendmentTotal !== 0) {
             if (currBudg === 0) {
                 // Pro-rate; for the time-being
-                let proRatedAmendedAmount = amendmentTotal / this.store.periods.length;
+                let proRatedAmendedAmount = this.store.utils.roundToTwo(amendmentTotal / this.store.periods.length);
                 for (let i = 0; i < this.store.periods.length; i++) {
                     this.amendmentData.push(proRatedAmendedAmount);
                 }
@@ -96,7 +96,9 @@ class Resbud {
             } else {
                 // Attribute correct percentage of total amendment amount to each period
                 this.oldBudget.forEach(periodAmount => {
-                    this.amendmentData.push((periodAmount / currBudg) * amendmentTotal);
+                    this.amendmentData.push(
+                        this.store.utils.roundToTwo((periodAmount / currBudg) * amendmentTotal)
+                    );
                 });
             }
         }
@@ -120,7 +122,7 @@ class Resbud {
         return exportData;
     }
 
-    buildSummaryReport(type, updateableContent) {
+    buildSummaryReport(type) {
         // Resbud report container (table row)
         let rowElement = document.createElement('tr');
 
@@ -135,15 +137,15 @@ class Resbud {
 
         // Add current/old budget
         rowElement.appendChild(this.generateField(
-            Math.round(this.getOldBudget())
+            this.getOldBudget()
         ));
 
         // New Budget Field
-        rowElement.appendChild(this.generateNewBudgetField(type, updateableContent));
+        rowElement.appendChild(this.generateNewBudgetField(type));
 
         // Add change/amendment required
         this.amendmentElement = this.generateField(
-            Math.round(this.getBudgetChange())
+            this.getBudgetChange()
         );
         rowElement.appendChild(this.amendmentElement);
 
@@ -170,7 +172,7 @@ class Resbud {
         return rows;
     }
 
-    generateNewBudgetField(type, updateableContent) {
+    generateNewBudgetField(type) {
         // Create New Budget Cell
         let newBudgetCell = this.store.utils.createElement('td', {
             className: 'newBudgetInput',
@@ -178,7 +180,7 @@ class Resbud {
 
         // Create New Budget Input Field to attach to cell        
         let newBudgetInput = this.store.utils.createElement('input', {
-            value: Math.round(this.getOldBudget()),
+            value: this.getOldBudget(),
             type: 'text',
             // step: '0.01',
         });
@@ -198,14 +200,20 @@ class Resbud {
             this.setNewBudgetTotal(parseFloat(newBudgetInput.value.replace(/[£,]/g, '')));
 
             // Update Amendment/Difference Element
-            this.amendmentElement.innerHTML = Math.round(this.getBudgetChange());
+            this.amendmentElement.innerHTML = this.getBudgetChange();
 
-            // Update New Budget Total Element
-            updateableContent.newBudgetTotalElement.innerHTML = updateableContent.updateNewBudgetTotal();
-
-            // Update Amendment/Difference Total Element 
-            updateableContent.amendmentTotalElement.innerHTML = updateableContent.updateAmendmentTotal();
+            // Fire Event so that subscribers can update DOM elements (or whatever) as required.
+            newBudgetInput.dispatchEvent(new CustomEvent(this.store.constants.BUDGET_CHANGE_EVENT, {
+                detail: {
+                    message: this.getCode() + ': New budget changed',
+                    code: this.getCode(),
+                    codeText: this.getCodeText()
+                },
+                bubbles: true,
+                cancelable: true
+            }));
         };
+
         return newBudgetCell;
     }
 
