@@ -30,6 +30,8 @@ class Resbud {
         this.periods = [];
         // Save DOM Node so that can update when user changes new budget
         this.amendmentElement;
+        // Save ref to roundToTwo function for ease of use
+        this.round = store.utils.roundToTwo;
     }
 
     /**
@@ -47,37 +49,70 @@ class Resbud {
     }
 
     getOldBudget() {
-        return this.store.utils.roundToTwo(this.oldBudget.reduce((acc, curr) => acc + curr, 0));
+        return this.oldBudget.reduce((acc, curr) => acc + curr, 0);
     }
 
     getNewBudget() {
-        return this.store.utils.roundToTwo(this.newBudget);
+        return this.newBudget;
     }
 
     getAmendmentTotal() {
-        return this.store.utils.roundToTwo(this.amendmentData.reduce((acc, curr) => acc + curr, 0));
+        return this.amendmentData.reduce((acc, curr) => acc + curr, 0);
     }
 
     setNewBudgetTotal(total) {
-        this.newBudget = this.store.utils.roundToTwo(total);
+        this.newBudget = total;
     }
 
+    /**
+     * Push a period onto the list maintained by this instance.
+     * Each Resbud needs to maintain their own period list as they
+     * aren't all the same.
+     * 
+     * @param {Number} period
+     */
     pushToPeriods(period) {
         this.periods.push(period);
     }
 
+    /**
+     * Returns the change in budget.
+     * There is a lot of rounding required in here.
+     * The return value of this function should only be used for display purposes. NOT calculations.
+     * 
+     * @return {Number}
+     */
     getBudgetChange() {
-        return this.store.utils.roundToTwo(this.getNewBudget() - this.getOldBudget());
+        let newBudg = this.round(this.getNewBudget());
+        let oldBudg = this.round(this.getOldBudget());
+        return this.round(newBudg - oldBudg);
     }
 
+    /**
+     * This returns the Resbud code that we're familiar with from Agresso.
+     * 
+     * @return {String}
+     */
     getCode() {
         return this.name;
     }
 
+    /**
+     * This returns the Resbud (T) that we're familiar with from Agresso.
+     * 
+     * @return {String}
+     */
     getCodeText() {
         return this.longName;
     }
 
+    /**
+     * The most important function of the entire Application!
+     * Doesn't accept any parameters or return any value.
+     * It creates the amendments required for each period of the
+     * Resbud and pushes to amendmentData.
+     * Results are retrieved from amendmentData.
+     */
     calculateResults() {
         // Clear out amendment data (means this can be re-used in same session)
         this.amendmentData = [];
@@ -85,10 +120,13 @@ class Resbud {
         let newBudg = this.getNewBudget();
         let amendmentTotal = newBudg - currBudg;
 
-        if (amendmentTotal !== 0) {
+        // Just using the rounded version to check if there is a change.
+        // Hopefully this stops rogue Resbuds appearing in results.
+        let roundedAmendmentCheck = this.store.utils.roundToTwo(newBudg) - this.store.utils.roundToTwo(currBudg)
+        if (roundedAmendmentCheck !== 0) {
             if (currBudg === 0) {
                 // Pro-rate; for the time-being
-                let proRatedAmendedAmount = this.store.utils.roundToTwo(amendmentTotal / this.store.periods.length);
+                let proRatedAmendedAmount = amendmentTotal / this.store.periods.length;
                 for (let i = 0; i < this.store.periods.length; i++) {
                     this.amendmentData.push(proRatedAmendedAmount);
                 }
@@ -97,13 +135,20 @@ class Resbud {
                 // Attribute correct percentage of total amendment amount to each period
                 this.oldBudget.forEach(periodAmount => {
                     this.amendmentData.push(
-                        this.store.utils.roundToTwo((periodAmount / currBudg) * amendmentTotal)
+                        (periodAmount / currBudg) * amendmentTotal
                     );
                 });
             }
         }
     }
 
+    /**
+     * Returns a list containing all amendment rows required for exporting.
+     * The list returned is 2D. Each nested list contains all the data
+     * required for each period.
+     * 
+     * @param {String} type - Version; PBFEC, PBPRICE etc.
+     */
     exportData(type) {
         let exportData = [];
         if (this.getAmendmentTotal() !== 0) {
@@ -122,6 +167,13 @@ class Resbud {
         return exportData;
     }
 
+    /**
+     * Creates and returns a table row (<tr>) which contains the
+     * summarised info for the Resbud. It also contains an input
+     * to let the User input new budget values.
+     * 
+     * @param {String} type - Version; PBFEC, PBPRICE etc.
+     */
     buildSummaryReport(type) {
         // Resbud report container (table row)
         let rowElement = document.createElement('tr');
@@ -137,7 +189,7 @@ class Resbud {
 
         // Add current/old budget
         rowElement.appendChild(this.generateField(
-            this.getOldBudget()
+            this.round(this.getOldBudget())
         ));
 
         // New Budget Field
@@ -180,7 +232,7 @@ class Resbud {
 
         // Create New Budget Input Field to attach to cell        
         let newBudgetInput = this.store.utils.createElement('input', {
-            value: this.getOldBudget(),
+            value: this.round(this.getOldBudget()),
             type: 'text',
             // step: '0.01',
         });

@@ -95,7 +95,7 @@ class App {
         // Using a set as they automatically strip out duplicate values.
         input.forEach(record => this.store.periods.add(record[this.store.constants.PERIOD]));
         // convert to array
-        this.store.periods = [...this.store.periods];
+        this.store.periods = [...this.store.periods].sort();
     }
 
     /**
@@ -122,7 +122,8 @@ class App {
         this.getCollections().forEach(
             collection => collection.calculateResults()
         );
-        this.buildResultsReport().scrollIntoView();
+        // this.buildResultsReport().scrollIntoView();
+        this.exportResults();
     }
 
     /**
@@ -183,6 +184,7 @@ class App {
     }
 
     /**
+     * NOT IN USE
      * Outputs another box with a table showing the results
      */
     buildResultsReport() {
@@ -368,14 +370,19 @@ class App {
             });
         });
         // Build up csv data and make browser download it as a file
-        exportData.forEach(row => csvString += `${row}\r\n`)
-        let link = this.store.utils.createElement('a', {
-            href: encodeURI(csvString),
-            download: `${this.store.subProject}_export.csv`,
-            innerHTML: 'Download',
-            style: 'display: none'
-        });
-        document.body.appendChild(link);
-        link.click();
+        // But only if there is data to export (exportData will be at least 1 in length due to heading).
+        if (exportData.length > 1) {
+            exportData.forEach(row => csvString += `${row}\r\n`)
+            let link = this.store.utils.createElement('a', {
+                href: encodeURI(csvString),
+                download: `${this.store.subProject}_export.csv`,
+                innerHTML: 'Download',
+                style: 'display: none'
+            });
+            document.body.appendChild(link);
+            link.click();
+        } else {
+            alert('There are no amendments to export...');
+        }
     }
 };

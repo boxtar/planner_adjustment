@@ -180,8 +180,6 @@ function startProcessing(input, store) {
              */
             app.buildSummaryReport();
 
-            console.log(app)
-
         } catch (err) {
 
             document.getElementById(store.htmlHooks.APP).innerHTML = "<div style=\"color: red\"><h2>ERROR: </h2><h4>" + err + "</h4></div>";
