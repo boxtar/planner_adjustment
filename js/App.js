@@ -359,7 +359,7 @@ class App {
             this.store.constants.RESBUD,
             this.store.constants.RESBUD + ' (T)',
             this.store.constants.SUB_PROJECT,
-            this.store.constants.CURR_AMOUNT,
+            this.store.constants.GBP_AMOUNT,
             this.store.constants.PERIOD,
             this.store.constants.DESCRIPTION,
         ].join(','));

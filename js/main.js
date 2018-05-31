@@ -26,6 +26,7 @@
             PRICE: 'PBPRICE',
             RESBUD: 'Resbud',
             NEW_BUDGET: 'PCB Budget',
+            GBP_AMOUNT: 'Amount',
             CURR_AMOUNT: 'Curr. amount',
             SUB_PROJECT: 'Sub-Project',
             DESCRIPTION: 'Description',

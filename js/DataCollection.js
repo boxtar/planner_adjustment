@@ -51,7 +51,7 @@ class DataCollection {
                 throw "More than 1 Resbud object for " + record[this.store.constants.RESBUD] + " in Collection " + this.name + ".<br/>Duplicates should not be possible - See JPM."
             }
             // Push old budget amount onto Resbud
-            resbud.pushToOldBudget(record[this.store.constants.CURR_AMOUNT], record[this.store.constants.PERIOD]);
+            resbud.pushToOldBudget(record[this.store.constants.GBP_AMOUNT], record[this.store.constants.PERIOD]);
         });
     }
 
