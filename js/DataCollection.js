@@ -279,11 +279,13 @@ class DataCollection {
     }
 
     calculateCurrentBudgetTotal() {
+        let total = 0;
         if (this.getType() === this.store.constants.PRICE) {
-            return this.getResbuds().map(r => r.getOldBudget()).reduce((acc, curr) => acc + curr, 0)
+            total = this.getResbuds().map(r => r.getOldBudget()).reduce((acc, curr) => acc + curr, 0)
         } else {
-            return this.getResbuds().map(r => r.getCode() !== 'XZ90' ? r.getOldBudget() : 0).reduce((acc, curr) => acc + curr, 0)
+            total = this.getResbuds().map(r => r.getCode() !== 'XZ90' ? r.getOldBudget() : 0).reduce((acc, curr) => acc + curr, 0)
         }
+        return this.store.utils.roundToTwo(total);
     }
 
     calculateNewBudgetTotal() {
@@ -296,14 +298,28 @@ class DataCollection {
         return this.store.utils.roundToTwo(total);
     }
 
+    /**
+     * Returns the total of all adjustments for this collection.
+     * There is a lot of rounding being applied here to stop the NaN issue.
+     */
     calculateAdjustmentTotal() {
         let total = 0;
         if (this.getType() === this.store.constants.PRICE) {
-            total = this.getResbuds().map(r => r.getNewBudget() - r.getOldBudget()).reduce((acc, curr) => acc + curr, 0)
+            total = this.getResbuds()
+                .map( r => this.getFormattedAdjustmentTotal(r) )
+                .reduce((acc, curr) => acc + curr, 0)
         } else {
-            total = this.getResbuds().map(r => r.getCode() !== 'XZ90' ? r.getNewBudget() - r.getOldBudget() : 0).reduce((acc, curr) => acc + curr, 0)
+            total = this.getResbuds()
+                .map(r => r.getCode() !== 'XZ90' ? this.getFormattedAdjustmentTotal(r) : 0)
+                .reduce((acc, curr) => acc + curr, 0)
         }
         return this.store.utils.roundToTwo(total);
+    }
+    
+    // Makes calculateAdjustmentTotal more readable
+    getFormattedAdjustmentTotal(r) {
+        let round = this.store.utils.roundToTwo;
+        return round( round( r.getNewBudget() ) - round( r.getOldBudget() ) );
     }
 
     /**
