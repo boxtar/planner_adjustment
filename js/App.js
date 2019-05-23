@@ -1,28 +1,27 @@
 /**
  * App class by Johnpaul McMahon
- * 
+ *
  * There should only be 1 instance of this class.
  * It will receive a store object from instantiator
  * and will control the displaying and updating of all
  * data.
- * 
+ *
  * Imports:
  * import DataCollection from DataCollection.js
  */
 
 class App {
-
     /**
-     * 
+     *
      * @param {Object} store
      */
     constructor(store) {
         // Shared store. Only give what is required to other components (Flux-like architecture)
-        this.store = store
+        this.store = store;
         // Sub-project number
-        this.store.subProject = 'test';
+        this.store.subProject = "test";
         // Description for each row - always the same
-        this.store.description = '';
+        this.store.description = "";
         // List of periods
         this.store.periods = new Set();
         // Percentage split of a Resbuds budget over the duration of project
@@ -33,7 +32,7 @@ class App {
 
     /**
      * Initialise App and setup Collections of Resbuds
-     * 
+     *
      * @param {Array} input
      */
     init(input) {
@@ -46,7 +45,7 @@ class App {
     /**
      * Initialise Collections of Resbud objects
      *
-     * @param {Array} input - List of objects 
+     * @param {Array} input - List of objects
      */
     initialiseCollections(input) {
         let collection;
@@ -62,7 +61,9 @@ class App {
                 description: this.store.description,
                 periods: [...this.store.periods],
             });
-            collection.init(input.filter(record => record[this.store.constants.TYPE] === collection.getType()));
+            collection.init(
+                input.filter(record => record[this.store.constants.TYPE] === collection.getType())
+            );
             this.store.collections.push(collection);
         });
     }
@@ -70,10 +71,10 @@ class App {
     /**
      * Set the Sub Project
      *
-     * @param {String} sp 
+     * @param {String} sp
      */
     setSubProject(sp) {
-        this.store.subProject = sp
+        this.store.subProject = sp;
     }
 
     /**
@@ -82,13 +83,13 @@ class App {
      * @param {String} desc
      */
     setDescription(desc) {
-        this.store.description = desc
+        this.store.description = desc;
     }
 
     /**
      * Set the Periods
      *
-     * @param {Array} input - Array of data to be scanned for unique period values 
+     * @param {Array} input - Array of data to be scanned for unique period values
      */
     setPeriods(input) {
         // Loop over all input records and the period values to the Set.
@@ -102,7 +103,7 @@ class App {
      * Returns array of DataCollection objects
      */
     getCollections() {
-        return this.store.collections
+        return this.store.collections;
     }
 
     /**
@@ -116,14 +117,50 @@ class App {
 
     /**
      * Kick starts the process of calculating the amendment results
-     * and displays the results
+     * Also downloads the results in .csv format
      */
     calculateResults() {
-        this.getCollections().forEach(
-            collection => collection.calculateResults()
-        );
+        // This will sum up new FEC Income budget and all PRICE budgets.
+        // If this is not 0 (or there abouts) then there is a problem.
+        let awardAmountCheck = 0;
+
+        this.getCollections().forEach(collection => {
+            collection.calculateResults();
+            awardAmountCheck += collection.newAwardAmount;
+        });
+
+        if (awardAmountCheck < -1 || awardAmountCheck > 1) {
+            this.warnUser();
+        } else {
+            this.downloadAndInformUser();
+        }
         // this.buildResultsReport().scrollIntoView();
-        this.exportResults();
+    }
+
+    // Show User success modal and download results.
+    downloadAndInformUser() {
+        if (this.exportResults()) {
+            Swal.fire("Downloading...", "Your results will be in your Downloads folder.", "success");
+        }
+    }
+
+    // Called when Income and Price budgets don't match.
+    // Informs User that there is a problem they need to sort.
+    warnUser() {
+        Swal.fire({
+            title: "Check your Income and Price Totals",
+            text: "This message appears when the Income budget and Price budget totals don't match",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#43a047",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "They are fine!",
+            cancelButtonText: "Cancel so I can check!",
+        }).then(result => {
+            if (result.value) {
+                this.downloadAndInformUser();
+            }
+        });
     }
 
     /**
@@ -131,23 +168,25 @@ class App {
      * This is where users input new budget amounts.
      */
     buildSummaryReport() {
-
         // Get Parent element
         let reportContainer = document.getElementById(this.store.htmlHooks.REPORT);
 
         // Re-used box element (gets re-assigned multiple times)
-        let box = this.store.utils.createElement('div', {
-            className: 'box'
+        let box = this.store.utils.createElement("div", {
+            className: "box",
         });
 
         // Add box to container
         reportContainer.appendChild(box);
 
         // Add info notification
-        box.appendChild(this.store.utils.createElement('div', {
-            innerHTML: 'Please check the below details. If anything is incorrect then see Johnpaul before proceeding.',
-            className: 'notification is-info has-text-centered',
-        }));
+        box.appendChild(
+            this.store.utils.createElement("div", {
+                innerHTML:
+                    "Please check the below details. If anything is incorrect then see Johnpaul before proceeding.",
+                className: "notification is-info has-text-centered",
+            })
+        );
 
         // Add field to display sub-project
         box.appendChild(this.buildSubProjectField());
@@ -161,16 +200,16 @@ class App {
         // Create a box for each Collection and append the result of
         // calling eaching Collection's buildSummaryReport method.
         this.store.collections.forEach(collection => {
-            box = this.store.utils.createElement('div', {
-                className: 'box'
+            box = this.store.utils.createElement("div", {
+                className: "box",
             });
             box.appendChild(collection.buildSummaryReport());
             reportContainer.appendChild(box);
         });
 
         // New box for Fetch and Restart buttons
-        box = this.store.utils.createElement('div', {
-            className: 'box'
+        box = this.store.utils.createElement("div", {
+            className: "box",
         });
 
         // Add button with event for calculating results
@@ -191,9 +230,9 @@ class App {
         // Get handle to results DOM node
         let container = document.getElementById(this.store.htmlHooks.OUTPUT);
 
-        // Box container 
-        let box = this.store.utils.createElement('div', {
-            className: 'box'
+        // Box container
+        let box = this.store.utils.createElement("div", {
+            className: "box",
         });
 
         // Clear all elements from container (start fresh)
@@ -201,10 +240,10 @@ class App {
 
         // Add export button
         box.appendChild(
-            this.store.utils.createElement('button', {
-                innerHTML: 'Export Results',
-                className: 'button is-info is-outlined',
-                onclick: () => this.exportResults()
+            this.store.utils.createElement("button", {
+                innerHTML: "Export Results",
+                className: "button is-info is-outlined",
+                onclick: () => this.exportResults(),
             })
         );
 
@@ -218,59 +257,59 @@ class App {
 
     /**
      * Returns DOM Element containing sub-project number
-     * 
+     *
      * @return {Element}
      */
     buildSubProjectField() {
         return this.buildFormElement(
-            'Sub-project', // Label text
+            "Sub-project", // Label text
             () => false, // onchange handler (no change events expected)
             {
-                type: 'text', // Input type
+                type: "text", // Input type
                 value: this.store.subProject, // Input value
-                disabled: 'disabled'
+                disabled: "disabled",
             }
         );
     }
 
     /**
      * Returns DOM Element containing duration in months
-     * 
+     *
      * @return {Element}
      */
     buildDurationField() {
         return this.buildFormElement(
-            'Duration', // Label text
+            "Duration", // Label text
             () => this.handleDurationChange(), // onchange handler
             {
-                type: 'number', // Input type
+                type: "number", // Input type
                 value: this.getMonthlyDuration(), // Input value
-                disabled: 'disabled'
+                disabled: "disabled",
             }
         );
     }
 
     /**
      * Returns DOM Element containing the first period
-     * 
+     *
      * @return {Element}
      */
     buildFirstPeriodField() {
         return this.buildFormElement(
-            'First Period', // Label text
+            "First Period", // Label text
             () => this.handleFirstPeriodChange(), // onchange handler
             {
-                type: 'number', // Input type
+                type: "number", // Input type
                 value: [...this.store.periods][0], // Input value
-                disabled: 'disabled',
+                disabled: "disabled",
             }
         );
     }
 
     buildFormElement(labelText, handler, inputOptions) {
         // Container element
-        let container = this.store.utils.createElement('div', {
-            className: 'field is-horizontal',
+        let container = this.store.utils.createElement("div", {
+            className: "field is-horizontal",
         });
         // Label element
         let label = this.buildLabel(labelText); // VARIABLE
@@ -281,44 +320,45 @@ class App {
         // Add input element to the input container
         inputContainer.appendChild(input);
         // Attach event handler to input element
-        if (handler !== undefined)
-            input.onchange = handler;
+        if (handler !== undefined) input.onchange = handler;
         //Attach the label and input container elements
         container.appendChild(label);
         container.appendChild(inputContainer);
-        return container
+        return container;
     }
 
     buildLabel(labelText) {
-        return this.store.utils.createElement('div', {
-            className: 'field-label is-normal',
-            innerHTML: `<label class="label">${labelText}</label>`
+        return this.store.utils.createElement("div", {
+            className: "field-label is-normal",
+            innerHTML: `<label class="label">${labelText}</label>`,
         });
     }
 
     buildInput(options = {}) {
-        let input = this.store.utils.createElement('input', {
-            className: 'input',
+        let input = this.store.utils.createElement("input", {
+            className: "input",
         });
         Object.keys(options).forEach(key => {
-            if (key === 'className')
-                input.className += ` ${options.className}`
-            else
-                input[key] = options[key]
+            if (key === "className") input.className += ` ${options.className}`;
+            else input[key] = options[key];
         });
         return input;
     }
 
     buildInputContainer() {
-        let container = this.store.utils.createElement('div', {
-            className: 'field-body'
+        let container = this.store.utils.createElement("div", {
+            className: "field-body",
         });
-        container.appendChild(this.store.utils.createElement('div', {
-            className: 'field'
-        }));
-        container.appendChild(this.store.utils.createElement('div', {
-            className: 'control'
-        }));
+        container.appendChild(
+            this.store.utils.createElement("div", {
+                className: "field",
+            })
+        );
+        container.appendChild(
+            this.store.utils.createElement("div", {
+                className: "control",
+            })
+        );
         return container;
     }
 
@@ -331,9 +371,9 @@ class App {
     }
 
     buildReloadButton() {
-        let button = this.store.utils.createElement('button', {
-            innerHTML: 'Restart',
-            className: 'button is-danger is-outlined'
+        let button = this.store.utils.createElement("button", {
+            innerHTML: "Restart",
+            className: "button is-danger is-outlined",
         });
         button.onclick = e => location.reload();
         return button;
@@ -341,48 +381,52 @@ class App {
 
     buildCalculateButton() {
         // Add button with event for calculating results
-        let button = this.store.utils.createElement('button', {
-            innerHTML: 'Fetch Results',
-            id: 'get-results-button',
-            className: 'button is-info',
-            style: 'margin-right: 8px',
+        let button = this.store.utils.createElement("button", {
+            innerHTML: "Fetch Results",
+            id: "get-results-button",
+            className: "button is-info",
+            style: "margin-right: 8px",
         });
         button.onclick = () => this.calculateResults();
         return button;
     }
 
     exportResults() {
-        let csvString = 'data:text/csv;charset=utf-8,';
+        let csvString = "data:text/csv;charset=utf-8,";
         let exportData = [];
-        exportData.push([
-            this.store.constants.TYPE,
-            this.store.constants.RESBUD,
-            this.store.constants.RESBUD + ' (T)',
-            this.store.constants.SUB_PROJECT,
-            this.store.constants.GBP_AMOUNT,
-            this.store.constants.PERIOD,
-            this.store.constants.DESCRIPTION,
-        ].join(','));
+        exportData.push(
+            [
+                this.store.constants.TYPE,
+                this.store.constants.RESBUD,
+                this.store.constants.RESBUD + " (T)",
+                this.store.constants.SUB_PROJECT,
+                this.store.constants.GBP_AMOUNT,
+                this.store.constants.PERIOD,
+                this.store.constants.DESCRIPTION,
+            ].join(",")
+        );
 
         this.getCollections().forEach(collection => {
             collection.exportData().forEach(resbudData => {
-                resbudData.forEach(row => exportData.push(row.join(',')))
+                resbudData.forEach(row => exportData.push(row.join(",")));
             });
         });
+
         // Build up csv data and make browser download it as a file
         // But only if there is data to export (exportData will be at least 1 in length due to heading).
         if (exportData.length > 1) {
-            exportData.forEach(row => csvString += `${row}\r\n`)
-            let link = this.store.utils.createElement('a', {
+            exportData.forEach(row => (csvString += `${row}\r\n`));
+            let link = this.store.utils.createElement("a", {
                 href: encodeURI(csvString),
                 download: `${this.store.subProject}_export.csv`,
-                innerHTML: 'Download',
-                style: 'display: none'
+                innerHTML: "Download",
+                style: "display: none",
             });
             document.body.appendChild(link);
             link.click();
-        } else {
-            alert('There are no amendments to export...');
+            return true;
         }
+        Swal.fire("No Changes", "Nothing appears to have changed...", "warning");
+        return false;
     }
-};
+}
