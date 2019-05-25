@@ -95,24 +95,44 @@
     };
 
     try {
-        // Check for the various File API support.
-        if (window.File && window.FileReader && window.FileList && window.Blob) {
-            // When a file is chosen, the process kicks off from handleFileSelect function
-            document
-                .getElementById(store.htmlHooks.FILE_INPUT)
-                .addEventListener("change", getFileSelectedHandler(store), false);
+        // Setup file select dialog listener.
+        document
+            .getElementById(store.htmlHooks.FILE_INPUT)
+            .addEventListener("change", getFileSelectedHandler(store), false);
 
-            // Or if user doesn't have a file, display empty report table so user can add manually
-            // document.getElementById(store.htmlHooks.NO_FILE).addEventListener('click', e => startProcessing([], store), false);
-        } else {
-            throw "File API not supported by your browser <i>(Google Chrome is the best)</i>";
-        }
+        // Setup the drop zone listeners.
+        let dropZone = document.getElementById("drop_zone");
+        // When user drags over drop zone
+        dropZone.addEventListener("dragover", handleDragOver, false);
+        // When user leaves the drop zone
+        dropZone.addEventListener("dragleave", e => e.target.classList.remove("hovering"), false);
+        // When user drops file on the drop zone
+        dropZone.addEventListener("drop", getFileSelectedHandler(store), false);
     } catch (err) {
         document.getElementById("app").innerHTML =
             '<div style="color: red"><h2>ERROR: </h2><h4>' + err + "</h4></div>";
         console.error(err);
     }
 })();
+
+/**
+ * Called when user is dragging/hovering a file over the
+ * drop zone area.
+ *
+ * @param {DragEvent} e
+ */
+function handleDragOver(e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // Explicitly show this is a copy.
+    e.dataTransfer.dropEffect = "copy";
+
+    // Add relevant class to drop zone if user is dragging over it.
+    if ((" " + e.target.className + " ").replace(/[\n\t]/g, " ").indexOf(" hovering ") < 0) {
+        e.target.classList.add("hovering");
+    }
+}
 
 /**
  |--------------------------------------------------
@@ -123,17 +143,29 @@
 
 function getFileSelectedHandler(store) {
     return e => {
-        let files = e.target.files; // FileList object
-        if (files.length > 0) {
-            // Use Papa to parse CSV file:
-            let data = Papa.parse(files[0], {
-                complete: (results, file) => startProcessing(results.data, store),
-                skipEmptyLines: true,
-                header: true,
-                dynamicTyping: true,
-            });
-        } else {
-            document.getElementById(store.constants.STATUS).innerHTML += "<p>No file chosen</p>";
+        e.stopPropagation();
+        e.preventDefault();
+
+        try {
+            let files = e.type === "drop" ? e.dataTransfer.files : e.target.files;
+            if (files.length > 0) {
+                if (files[0].name.split(".").pop() !== "csv")
+                    throw "File must be of CSV format and have .csv extension";
+                // Use Papa to parse CSV file:
+                Papa.parse(files[0], {
+                    complete: (results, file) => startProcessing(results.data, store),
+                    skipEmptyLines: true,
+                    header: true,
+                    dynamicTyping: true,
+                });
+            } else {
+                throw "No file chosen. Please refresh and try again...";
+            }
+        } catch (error) {
+            console.error(error);
+            document.getElementById(
+                "file-error-status"
+            ).innerHTML = `<div class="notification is-danger" style="margin-bottom: 15px;">${error}</div>`;
         }
     };
 }

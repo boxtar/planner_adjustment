@@ -11,12 +11,29 @@
 <body>
 
     <div class="container main">
+
+        <h1 class="title main-title has-text-centered">Post Award Adjustments</h1>
     
         <div id="initialControls">
-            <div class="box choose-file">
-                <input type="file" id="dataInput" name="dataInput" class="inputFile"/>
-                <label for="dataInput"><div class="inner"><i class="material-icons">input</i>&nbsp;&nbsp; Choose a .csv file...</div></label>
-                <!-- <p id="noFile" style="text-decoration: underline; cursor: pointer">or continue without a file...</p> -->
+            <div id="file-error-status"></div>
+            <!-- File Upload -->
+            <div class="file is-boxed" id="file-input-container" style="display: block; background: white;">
+                <label class="file-label">
+                    <input class="file-input" type="file" name="data-file" id="dataInput">
+                    <span class="file-cta">
+                        <span class="file-icon">
+                            <i class="material-icons">input</i>
+                        </span>
+                        <span class="file-label">
+                            Choose a .csv file…
+                        </span>
+                    </span>
+                </label>
+            </div>
+            <div class="dropzone-container">
+                <div id="drop_zone" class="">
+                    Or drop a .csv file here
+                </div>
             </div>
         </div>
         

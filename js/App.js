@@ -28,6 +28,8 @@ class App {
         this.store.percentagesPerPeriod = [];
         // List of DataCollection's. Each collection holds a list of Resbuds
         this.store.collections = [];
+        // FEC Income vs PRICE budget check
+        this.awardAmountCheck;
     }
 
     /**
@@ -92,7 +94,7 @@ class App {
      * @param {Array} input - Array of data to be scanned for unique period values
      */
     setPeriods(input) {
-        // Loop over all input records and the period values to the Set.
+        // Loop over all input records and add the period values to the Set.
         // Using a set as they automatically strip out duplicate values.
         input.forEach(record => this.store.periods.add(record[this.store.constants.PERIOD]));
         // convert to array
@@ -115,26 +117,35 @@ class App {
         return this.store.periods.length;
     }
 
+    isAwardOk() {
+        return this.awardAmountCheck > -1 && this.awardAmountCheck < 1;
+    }
+
     /**
      * Kick starts the process of calculating the amendment results
      * Also downloads the results in .csv format
      */
     calculateResults() {
-        // This will sum up new FEC Income budget and all PRICE budgets.
-        // If this is not 0 (or there abouts) then there is a problem.
-        let awardAmountCheck = 0;
+        // Reset
+        this.awardAmountCheck = 0;
 
+        // Call upon each Collection to calculate amendment results
+        // and then add the award amount for each Collection onto
+        // the Apps overall award amount check.
         this.getCollections().forEach(collection => {
             collection.calculateResults();
-            awardAmountCheck += collection.newAwardAmount;
+            this.awardAmountCheck += collection.newAwardAmount;
         });
 
-        if (awardAmountCheck < -1 || awardAmountCheck > 1) {
-            this.warnUser();
-        } else {
+        // If award control check is ok, download results and return.
+        if (this.isAwardOk()) {
             this.downloadAndInformUser();
+            // this.buildResultsReport().scrollIntoView();
+            return;
         }
-        // this.buildResultsReport().scrollIntoView();
+
+        // If above check never returned then warn user of award discrepancy.
+        this.warnUser();
     }
 
     // Show User success modal and download results.

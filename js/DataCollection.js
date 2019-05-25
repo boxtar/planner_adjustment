@@ -108,7 +108,7 @@ class DataCollection {
         if (this.isOfTypeFec() && resbud.getCode() == "XZ90") {
             // Old fec income amount + amendment = target income amount
             this.newAwardAmount = resbud.getOldBudget() + resbud.getAmendmentTotal();
-        } else if (this.getType() == "PBPRICE" || this.getType() == "IBPRICE") {
+        } else if (this.isOfTypePrice()) {
             // Old price budget + all price amendments = target price budget
             this.newAwardAmount += resbud.getOldBudget() + resbud.getAmendmentTotal();
         }
